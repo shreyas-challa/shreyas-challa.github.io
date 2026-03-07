@@ -41,7 +41,7 @@ function Home() {
           </div>
           <div className='top-2 absolute inset-x-0 mx-auto'>
             <PlaceholdersAndVanishInput
-              placeholders={["Search blog posts..."]}
+              placeholders={["Search shreyas's personality"]}
               onChange={(e) => setQuery(e.target.value)}
               onSubmit={() => setQuery('')}
             />
