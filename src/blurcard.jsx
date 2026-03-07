@@ -82,8 +82,9 @@ export function BlurCard({ post }) {
       <div className='rounded-2xl w-[600px] h-[500px] flex flex-col p-8'>
         <h2 className='text-3xl font-bold mb-2'>{post.title}</h2>
         {subtitle && <p className='text-base font-medium mb-4 text-foreground'>{subtitle}</p>}
-        <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'>
-          {renderContent(post.content)}
+        <div className='relative flex-1 overflow-hidden'>
+          {renderContent(post.content, 3)}
+          <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent' />
         </div>
         <div className='mt-4 flex items-center justify-between'>
           <span className='text-xs text-muted-foreground'>Published {new Date(post.created_at).toLocaleDateString()}</span>
