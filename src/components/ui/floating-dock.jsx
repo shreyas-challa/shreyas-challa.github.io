@@ -23,46 +23,46 @@ const FloatingDockMobile = ({
 }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className={cn("relative block md:hidden", className)}>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            layoutId="nav"
-            className="absolute right-full bottom-0 mr-2 flex flex-row gap-2">
-            {items.map((item, idx) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{
-                  opacity: 1,
-                  x: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  x: 10,
-                  transition: {
-                    delay: idx * 0.05,
-                  },
-                }}
-                transition={{ delay: (items.length - 1 - idx) * 0.05 }}>
-                <a
-                  href={item.href}
-                  target={item.target}
-                  rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
-                  key={item.title}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900">
-                  <div className="h-4 w-4">{item.icon}</div>
-                </a>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-800">
-        <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-      </button>
+    <div className={cn("block md:hidden", className)}>
+      <motion.div
+        className="fixed z-50 bottom-2"
+        animate={open ? { right: 16, left: "auto", x: 0 } : { right: "50%", x: "50%" }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        <div className="relative flex flex-row items-center gap-2">
+          <AnimatePresence>
+            {open && (
+              <>
+                {items.map((item, idx) => (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.5,
+                      transition: { delay: idx * 0.03 },
+                    }}
+                    transition={{ delay: (items.length - 1 - idx) * 0.05 }}>
+                    <a
+                      href={item.href}
+                      target={item.target}
+                      rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900">
+                      <div className="h-4 w-4">{item.icon}</div>
+                    </a>
+                  </motion.div>
+                ))}
+              </>
+            )}
+          </AnimatePresence>
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-800">
+            <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 };

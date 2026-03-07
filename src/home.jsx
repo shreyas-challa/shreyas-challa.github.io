@@ -67,7 +67,7 @@ function Home() {
           <Blogs posts={cardPosts} heading={isSearching ? "Search Results" : "Other Blog Posts"} />
         </div>
 
-        <div className='fixed items-center z-50 bottom-2'>
+        <div className='fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2'>
           <FloatingDock items={links} />
         </div>
 
