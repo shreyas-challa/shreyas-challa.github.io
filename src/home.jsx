@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import './App.css'
 import { links } from './links'
 import { PlaceholdersAndVanishInput } from './components/ui/placeholders-and-vanish-input'
@@ -8,32 +7,7 @@ import { BlurCard } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
-import { supabase } from './database'
-
-function usePosts() {
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  useEffect(() => {
-    let cancelled = false
-    async function fetchPosts() {
-      setLoading(true)
-      setError(null)
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (!cancelled) {
-        if (error) setError(error.message)
-        else setPosts(data || [])
-        setLoading(false)
-      }
-    }
-    fetchPosts()
-    return () => { cancelled = true }
-  }, [])
-  return { posts, loading, error }
-}
+import posts from './data/posts'
 
 // dot flow pre fuck up
 //  items={[{"title":"Welcome","frames":[[14,7,0,8,6,13,20],[14,7,13,20,16,27,21],[14,20,27,21,34,24,28],[27,21,34,28,41,32,35],[34,28,41,35,48,40,42],[34,28,41,35,48,42,46],[34,28,41,35,48,42,38],[34,28,41,35,48,30,21],[34,28,41,48,21,22,14],[34,28,41,21,14,16,27],[34,28,21,14,10,20,27],[28,21,14,4,13,20,27],[28,21,14,12,6,13,20],[28,21,14,6,13,20,11],[28,21,14,6,13,20,10],[14,6,13,20,9,7,21]]},{"title":"Welcome","frames":[[14,7,0,8,6,13,20],[14,7,13,20,16,27,21],[14,20,27,21,34,24,28],[27,21,34,28,41,32,35],[34,28,41,35,48,40,42],[34,28,41,35,48,42,46],[34,28,41,35,48,42,38],[34,28,41,35,48,30,21],[34,28,41,48,21,22,14],[34,28,41,21,14,16,27],[34,28,21,14,10,20,27],[28,21,14,4,13,20,27],[28,21,14,12,6,13,20],[28,21,14,6,13,20,11],[28,21,14,6,13,20,10],[14,6,13,20,9,7,21]]}]}>
@@ -41,7 +15,6 @@ function usePosts() {
 
 
 function Home() {
-  const { posts, loading, error } = usePosts()
   const latest = posts[0]
   const remaining = posts.slice(1)
 
@@ -74,8 +47,6 @@ function Home() {
 
         {/* Blog Cards Section */}
         <div className='w-full max-w-7xl px-8 py-16'>
-          {error && <div className='text-red-600 mb-4'>Failed to load posts: {error}</div>}
-          {loading && posts.length === 0 && <div className='text-muted-foreground mb-4'>Loading posts…</div>}
           <Blogs posts={remaining} />
         </div>
 

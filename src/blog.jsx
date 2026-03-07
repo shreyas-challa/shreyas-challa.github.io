@@ -6,7 +6,7 @@ export default function Blog() {
   return (
     <div className="flex flex-col justify-center items-center w-screen">
       <div className="w-[200px] h-[200px] rounded-xl mt-10">
-        <img className="rounded-xl" src='https://eirmjzgthjfyckywaarc.supabase.co/storage/v1/object/public/post-covers/1764035145709-e79d8a29-860e-4b0c-ba58-bdfded7785a4.jpg'></img>
+        <img className="rounded-xl" src='https://images.unsplash.com/photo-1677442136019-21780ecad995?w=200&h=200&fit=crop' alt="Blog cover"></img>
       </div>
       <div className="flex flex-col justify-center items-center w-[800px] mt-8">
         <p>
