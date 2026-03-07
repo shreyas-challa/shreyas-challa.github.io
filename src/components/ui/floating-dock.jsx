@@ -28,18 +28,18 @@ const FloatingDockMobile = ({
         {open && (
           <motion.div
             layoutId="nav"
-            className="absolute inset-x-0 bottom-full mb-2 flex flex-col gap-2">
+            className="absolute right-full bottom-0 mr-2 flex flex-row gap-2">
             {items.map((item, idx) => (
               <motion.div
                 key={item.title}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, x: 10 }}
                 animate={{
                   opacity: 1,
-                  y: 0,
+                  x: 0,
                 }}
                 exit={{
                   opacity: 0,
-                  y: 10,
+                  x: 10,
                   transition: {
                     delay: idx * 0.05,
                   },

@@ -53,7 +53,7 @@ function Home() {
 
         {/* main body div */}
         {!isSearching && (
-          <div className=''>
+          <div className='w-full'>
             <MainHeading />
             <BlurCard post={latest} />
           </div>

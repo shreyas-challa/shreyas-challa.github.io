@@ -66,9 +66,9 @@ export function BlurCard({ post }) {
   const navigate = useNavigate();
   if (!post) {
     return (
-      <div className='flex w-[1200px] justify-between'>
-        <div className='rounded-2xl w-[600px] h-[500px] flex items-center justify-center border text-muted-foreground'>Loading latest post…</div>
-        <div className='relative aspect-square w-[450px] h-[450px] overflow-hidden rounded-lg bg-muted animate-pulse' />
+      <div className='flex flex-col md:flex-row w-full max-w-[1200px] mx-auto px-4 md:px-0 gap-6 md:justify-between'>
+        <div className='rounded-2xl w-full md:w-[600px] h-[300px] md:h-[500px] flex items-center justify-center border text-muted-foreground'>Loading latest post…</div>
+        <div className='relative aspect-square w-full max-w-[450px] mx-auto md:mx-0 h-auto md:h-[450px] overflow-hidden rounded-lg bg-muted animate-pulse' />
       </div>
     );
   }
@@ -78,10 +78,10 @@ export function BlurCard({ post }) {
   const excerpt = subtitle || extractExcerpt(post.content);
 
   return (
-    <div className='flex w-[1200px] justify-between'>
-      <div className='rounded-2xl w-[600px] h-[500px] flex flex-col p-8'>
-        <h2 className='text-3xl font-bold mb-2'>{post.title}</h2>
-        {subtitle && <p className='text-base font-medium mb-4 text-foreground'>{subtitle}</p>}
+    <div className='flex flex-col-reverse md:flex-row w-full max-w-[1200px] mx-auto px-4 md:px-0 gap-6 md:justify-between'>
+      <div className='rounded-2xl w-full md:w-[600px] h-auto md:h-[500px] flex flex-col p-4 md:p-8'>
+        <h2 className='text-2xl md:text-3xl font-bold mb-2'>{post.title}</h2>
+        {subtitle && <p className='text-sm md:text-base font-medium mb-4 text-foreground'>{subtitle}</p>}
         <div className='relative flex-1 overflow-hidden'>
           {renderContent(post.content, 3)}
           <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent' />
@@ -90,13 +90,12 @@ export function BlurCard({ post }) {
           <span className='text-xs text-muted-foreground'>Published {new Date(post.created_at).toLocaleDateString()}</span>
           <RippleButton duration={600} rippleColor="#ADD8E6" onClick={() => navigate(`/blog/${post.id}`)}>Read more!</RippleButton>
         </div>
-        {/* ${post.id} */}
       </div>
-      <div className='relative aspect-square w-[450px] h-[450px] overflow-hidden rounded-lg'>
+      <div className='relative aspect-square w-full max-w-[450px] mx-auto md:mx-0 overflow-hidden rounded-lg'>
         <img
           src={cover}
           alt={post.title}
-          className='absolute inset-0 object-cover w-full h-full'  
+          className='absolute inset-0 object-cover w-full h-full'
         />
         <ProgressiveBlur
           className='pointer-events-none absolute bottom-0 left-0 h-[25%] w-full'
