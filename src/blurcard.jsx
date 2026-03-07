@@ -87,7 +87,7 @@ export function BlurCard({ post }) {
         </div>
         <div className='mt-4 flex items-center justify-between'>
           <span className='text-xs text-muted-foreground'>Published {new Date(post.created_at).toLocaleDateString()}</span>
-          <RippleButton duration={600} rippleColor="#ADD8E6" onClick={() => navigate(`/blog/`)}>Read more!</RippleButton>
+          <RippleButton duration={600} rippleColor="#ADD8E6" onClick={() => navigate(`/blog/${post.id}`)}>Read more!</RippleButton>
         </div>
         {/* ${post.id} */}
       </div>

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll'
 import { MinimalCard, MinimalCardImage, MinimalCardTitle, MinimalCardDescription } from '@/components/ui/minimal-card'
 
@@ -16,12 +17,13 @@ function extractExcerpt(contentJsonString, maxLength = 120) {
   return text.trim().slice(0, maxLength) + (text.length > maxLength ? '…' : '');
 }
 
-function Blogs({ posts }) {
+function Blogs({ posts, heading = "Other Blog Posts" }) {
+  const navigate = useNavigate();
   const list = posts || [];
   return (
     <div>
       <RevealOnScroll delay={100} duration={700}>
-        <h2 className='text-3xl font-bold mb-8 text-foreground'>Other Blog Posts</h2>
+        <h2 className='text-3xl font-bold mb-8 text-foreground'>{heading}</h2>
       </RevealOnScroll>
       {list.length === 0 && (
         <div className='text-muted-foreground'>No posts yet.</div>
@@ -29,16 +31,18 @@ function Blogs({ posts }) {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {list.map((post, i) => (
           <RevealOnScroll key={post.id} delay={150 + i*75} duration={700}>
-            <MinimalCard>
-              <MinimalCardImage
-                src={post.image || 'https://placehold.co/600x400/png'}
-                alt={post.title}
-              />
-              <MinimalCardTitle>{post.title}</MinimalCardTitle>
-              <MinimalCardDescription>
-                {post['sub-title'] || extractExcerpt(post.content)}
-              </MinimalCardDescription>
-            </MinimalCard>
+            <div onClick={() => navigate(`/blog/${post.id}`)} className="cursor-pointer">
+              <MinimalCard>
+                <MinimalCardImage
+                  src={post.image || '/images/welcome-blog.jpg'}
+                  alt={post.title}
+                />
+                <MinimalCardTitle>{post.title}</MinimalCardTitle>
+                <MinimalCardDescription>
+                  {post['sub-title'] || extractExcerpt(post.content)}
+                </MinimalCardDescription>
+              </MinimalCard>
+            </div>
           </RevealOnScroll>
         ))}
       </div>
