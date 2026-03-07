@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FloatingDock } from "./components/ui/floating-dock";
-import { links } from "./links";
-import posts from "./data/posts";
+import { links, createLink } from "./links";
+import { supabase } from "./database";
+import { useAuth } from "./auth-context";
 
 function renderContent(jsonString) {
   if (!jsonString) return null;
@@ -46,22 +48,47 @@ function renderContent(jsonString) {
 export default function Blog() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const post = posts.find(p => String(p.id) === id);
+  const { user } = useAuth();
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from('posts')
+      .select('*')
+      .eq('id', id)
+      .single()
+      .then(({ data }) => {
+        setPost(data);
+        setLoading(false);
+      });
+  }, [id]);
+
+  const dockLinks = user ? [...links, createLink] : links;
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-screen">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-screen">
         <h1 className="text-3xl font-bold mb-4">Post not found</h1>
         <button onClick={() => navigate("/")} className="text-blue-500 underline">Go home</button>
-        <div className="fixed items-center z-50 bottom-2">
-          <FloatingDock items={links} />
+        <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
+          <FloatingDock items={dockLinks} />
         </div>
       </div>
     );
   }
 
   const cover = post.image || '/images/welcome-blog.jpg';
-  const subtitle = post['sub-title'] || '';
+  const subtitle = post.sub_title || '';
 
   return (
     <div className="flex flex-col justify-center items-center w-screen">
@@ -79,8 +106,8 @@ export default function Blog() {
         </div>
         <div className="h-[100px]"></div>
       </div>
-      <div className="fixed items-center z-50 w-fill bottom-2">
-        <FloatingDock items={links} />
+      <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
+        <FloatingDock items={dockLinks} />
       </div>
     </div>
   );

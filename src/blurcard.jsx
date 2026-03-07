@@ -74,7 +74,7 @@ export function BlurCard({ post }) {
   }
 
   const cover = post.image || 'https://placehold.co/600x600/png';
-  const subtitle = post['sub-title'] || '';
+  const subtitle = post.sub_title || '';
   const excerpt = subtitle || extractExcerpt(post.content);
 
   return (

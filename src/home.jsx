@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Fuse from 'fuse.js'
 import './App.css'
-import { links } from './links'
+import { links, createLink } from './links'
 import { PlaceholdersAndVanishInput } from './components/ui/placeholders-and-vanish-input'
 import { FloatingDock } from './components/ui/floating-dock'
 import { DotFlow } from './components/ui/gsap/dot-flow'
@@ -9,24 +9,43 @@ import { BlurCard } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
-import allPosts from './data/posts'
-
-const fuse = new Fuse(allPosts, {
-  keys: ['title', 'sub-title'],
-  threshold: 0.4,
-})
+import { supabase } from './database'
+import { useAuth } from './auth-context'
 
 function Home() {
   const [query, setQuery] = useState('')
+  const [allPosts, setAllPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (!supabase) { setLoading(false); return; }
+    supabase
+      .from('posts')
+      .select('*')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setAllPosts(data || [])
+        setLoading(false)
+      })
+  }, [])
+
+  const fuse = useMemo(() => new Fuse(allPosts, {
+    keys: ['title', 'sub_title'],
+    threshold: 0.4,
+  }), [allPosts])
 
   const posts = useMemo(() => {
     if (!query.trim()) return allPosts
     return fuse.search(query).map(r => r.item)
-  }, [query])
+  }, [query, fuse, allPosts])
 
   const isSearching = query.trim().length > 0
   const latest = !isSearching ? posts[0] : null
   const cardPosts = !isSearching ? posts.slice(1) : posts
+
+  const dockLinks = user ? [...links, createLink] : links
 
   return (
     <>
@@ -52,7 +71,7 @@ function Home() {
         </div>
 
         {/* main body div */}
-        {!isSearching && (
+        {!isSearching && !loading && (
           <div className='w-full'>
             <MainHeading />
             <BlurCard post={latest} />
@@ -61,14 +80,15 @@ function Home() {
 
         {/* Blog Cards Section */}
         <div className='w-full max-w-7xl px-8 py-16'>
+          {loading && <div className='text-muted-foreground text-center text-lg mt-8'>Loading posts...</div>}
           {isSearching && posts.length === 0 && (
             <div className='text-muted-foreground text-center text-lg mt-8'>No posts matching "{query}"</div>
           )}
-          <Blogs posts={cardPosts} heading={isSearching ? "Search Results" : "Other Blog Posts"} />
+          {!loading && <Blogs posts={cardPosts} heading={isSearching ? "Search Results" : "Other Blog Posts"} />}
         </div>
 
         <div className='fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2'>
-          <FloatingDock items={links} />
+          <FloatingDock items={dockLinks} />
         </div>
 
       </div>

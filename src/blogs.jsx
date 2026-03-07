@@ -39,7 +39,7 @@ function Blogs({ posts, heading = "Other Blog Posts" }) {
                 />
                 <MinimalCardTitle>{post.title}</MinimalCardTitle>
                 <MinimalCardDescription>
-                  {post['sub-title'] || extractExcerpt(post.content)}
+                  {post.sub_title || extractExcerpt(post.content)}
                 </MinimalCardDescription>
               </MinimalCard>
             </div>

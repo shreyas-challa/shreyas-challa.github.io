@@ -1,9 +1,12 @@
 import { FloatingDock } from './components/ui/floating-dock'
-import { links } from './links'
+import { links, createLink } from './links'
 import { EncryptedText } from '@/components/ui/encrypted-text'
 import { IconBrandGithub, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react'
+import { useAuth } from './auth-context'
 
 export default function About() {
+  const { user } = useAuth()
+  const dockLinks = user ? [...links, createLink] : links
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-screen px-4">
       <div className="flex flex-col items-center gap-6 max-w-lg text-center">
@@ -35,8 +38,8 @@ export default function About() {
         </div>
       </div>
 
-      <div className="fixed items-center z-50 bottom-2">
-        <FloatingDock items={links} />
+      <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
+        <FloatingDock items={dockLinks} />
       </div>
     </div>
   )

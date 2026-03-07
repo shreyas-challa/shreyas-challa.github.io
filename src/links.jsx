@@ -24,13 +24,6 @@ export const links = [
       href: "#/about",
     },
     {
-      title: "Create",
-      icon: (
-        <IconPencil className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "#/create",
-    },
-    {
       title: "X",
       icon: (
         <IconBrandX className="h-full w-full text-neutral-500 dark:text-neutral-300" />
@@ -55,3 +48,11 @@ export const links = [
       target: "_blank",
     },
   ];
+
+export const createLink = {
+  title: "Create",
+  icon: (
+    <IconPencil className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+  ),
+  href: "#/create",
+};

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { supabase } from "./database";
+import { useAuth } from "./auth-context";
 import {
   EditorBubbleMenu,
   EditorCharacterCount,
@@ -46,6 +47,7 @@ import { Button } from "@/components/ui/button";
 import { ImageIcon, SaveIcon, EyeIcon, Trash2Icon } from "lucide-react";
 
 function Create() {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [content, setContent] = useState({
@@ -86,13 +88,13 @@ function Create() {
     if (!file) return;
     try {
       // Upload inline image to Supabase storage bucket
-      const fileName = `${Date.now()}-${file.name}`.replace(/\s+/g, "-");
+      const fileName = `content/${Date.now()}-${file.name}`.replace(/\s+/g, "-");
       const { error: uploadError } = await supabase.storage
-        .from("post-content-images")
+        .from("blog-images")
         .upload(fileName, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: publicData } = supabase.storage
-        .from("post-content-images")
+        .from("blog-images")
         .getPublicUrl(fileName);
       const url = publicData.publicUrl;
       if (editor) {
@@ -112,22 +114,26 @@ function Create() {
     try {
       let coverUrl = null;
       if (coverFile) {
-        const fileName = `${Date.now()}-${coverFile.name}`.replace(/\s+/g, "-");
+        const fileName = `covers/${Date.now()}-${coverFile.name}`.replace(/\s+/g, "-");
         const { error: uploadError } = await supabase.storage
-          .from("post-covers")
+          .from("blog-images")
           .upload(fileName, coverFile, { upsert: true });
         if (uploadError) throw uploadError;
         const { data: publicData } = supabase.storage
-          .from("post-covers")
+          .from("blog-images")
           .getPublicUrl(fileName);
         coverUrl = publicData.publicUrl;
       }
 
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       const insertPayload = {
         title,
-        "sub-title": subtitle, // your table uses "sub-title" column
-        content: JSON.stringify(content), // store as JSON string
+        sub_title: subtitle,
+        slug,
+        content: JSON.stringify(content),
         image: coverUrl,
+        published: true,
+        author_id: user.id,
       };
       const { data, error: insertError } = await supabase.from("posts").insert([insertPayload]).select();
       if (insertError) throw insertError;
