@@ -47,6 +47,8 @@ const FloatingDockMobile = ({
                 transition={{ delay: (items.length - 1 - idx) * 0.05 }}>
                 <a
                   href={item.href}
+                  target={item.target}
+                  rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
                   key={item.title}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 dark:bg-neutral-900">
                   <div className="h-4 w-4">{item.icon}</div>
@@ -89,7 +91,8 @@ function IconContainer({
   mouseX,
   title,
   icon,
-  href
+  href,
+  target
 }) {
   let ref = useRef(null);
 
@@ -130,7 +133,7 @@ function IconContainer({
   const [hovered, setHovered] = useState(false);
 
   return (
-    <a href={href}>
+    <a href={href} target={target} rel={target === "_blank" ? "noopener noreferrer" : undefined}>
       <motion.div
         ref={ref}
         style={{ width, height }}
