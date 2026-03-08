@@ -8,7 +8,7 @@ export default function About() {
   const { user } = useAuth()
   const dockLinks = user ? [...links, createLink] : links
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-screen px-4">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full px-4">
       <div className="flex flex-col items-center gap-6 max-w-lg text-center">
         <div className="w-28 h-28 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-500 dark:from-neutral-600 dark:to-neutral-800 flex items-center justify-center text-4xl font-bold text-white select-none">
           S

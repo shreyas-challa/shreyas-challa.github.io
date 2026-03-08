@@ -70,7 +70,7 @@ export default function Blog() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen w-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen w-full">
         <p className="text-muted-foreground">Loading...</p>
       </div>
     );
@@ -78,7 +78,7 @@ export default function Blog() {
 
   if (!post) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen w-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen w-full">
         <h1 className="text-3xl font-bold mb-4">Post not found</h1>
         <button onClick={() => navigate("/")} className="text-blue-500 underline">Go home</button>
         <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
@@ -92,7 +92,7 @@ export default function Blog() {
   const subtitle = post.sub_title || '';
 
   return (
-    <div className="flex flex-col justify-center items-center w-screen">
+    <div className="flex flex-col justify-center items-center w-full">
       <div className="w-[200px] h-[200px] rounded-xl mt-10">
         <img className="rounded-xl object-cover w-full h-full" src={cover} alt={post.title} />
       </div>
