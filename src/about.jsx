@@ -15,7 +15,7 @@ export default function About() {
         </div>
 
         <h1 className="text-4xl font-bold">
-          <EncryptedText text="Shreyas Challa" />
+          <EncryptedText text='Shreyas "Noigel" Challa' />
         </h1>
 
         <p className="text-lg text-muted-foreground">
