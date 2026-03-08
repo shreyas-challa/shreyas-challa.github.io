@@ -17,13 +17,6 @@ export const links = [
       href: "/",
     },
     {
-      title: "About",
-      icon: (
-        <IconUser className="h-full w-full text-neutral-500 dark:text-neutral-300" />
-      ),
-      href: "/about",
-    },
-    {
       title: "X",
       icon: (
         <IconBrandX className="h-full w-full text-neutral-500 dark:text-neutral-300" />
@@ -46,6 +39,13 @@ export const links = [
       ),
       href: "https://linkedin.com/in/shreyas-challa",
       target: "_blank",
+    },
+    {
+      title: "About",
+      icon: (
+        <IconUser className="h-full w-full text-neutral-500 dark:text-neutral-300" />
+      ),
+      href: "/about",
     },
   ];
 
