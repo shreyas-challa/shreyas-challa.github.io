@@ -81,7 +81,7 @@ export default function Blog() {
       <div className="flex flex-col items-center justify-center min-h-screen w-full">
         <h1 className="text-3xl font-bold mb-4">Post not found</h1>
         <button onClick={() => navigate("/")} className="text-blue-500 underline">Go home</button>
-        <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
+        <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">
           <FloatingDock items={dockLinks} />
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function Blog() {
         </div>
         <div className="h-[100px]"></div>
       </div>
-      <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
+      <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">
         <FloatingDock items={dockLinks} />
       </div>
     </div>

@@ -65,8 +65,8 @@ function Home() {
               onSubmit={() => setQuery('')}
             />
           </div>
-          <div className='z-50'>
-              <AnimatedThemeToggler className="mr-4 p-2 rounded-md border-border bg-background hover:bg-accent transition-colors" />
+          <div className='absolute right-4 top-2 z-50 h-12 flex items-center'>
+              <AnimatedThemeToggler className="p-2 rounded-md border-border bg-background hover:bg-accent transition-colors" />
           </div>
         </div>
 
@@ -87,7 +87,7 @@ function Home() {
           {!loading && <Blogs posts={cardPosts} heading={isSearching ? "Search Results" : "Other Blog Posts"} />}
         </div>
 
-        <div className='fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2'>
+        <div className='md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2'>
           <FloatingDock items={dockLinks} />
         </div>
 

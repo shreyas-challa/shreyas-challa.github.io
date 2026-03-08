@@ -2,7 +2,7 @@ import { TypingAnimation } from "@/components/ui/typing-animation";
 
 export function MainHeading() {
   return (
-    <div className="w-full max-w-[1200px] mx-auto px-4 md:px-0">
+    <div className="w-full max-w-[1200px] mx-auto px-4 md:px-0 mt-6 mb-4 md:mb-2">
       <TypingAnimation
         words={["Latest Post"]}
         cursorStyle="block"

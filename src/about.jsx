@@ -38,7 +38,7 @@ export default function About() {
         </div>
       </div>
 
-      <div className="fixed items-center z-50 bottom-2 md:left-1/2 md:-translate-x-1/2">
+      <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">
         <FloatingDock items={dockLinks} />
       </div>
     </div>
