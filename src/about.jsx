@@ -19,7 +19,7 @@ export default function About() {
         </h1>
 
         <p className="text-lg text-muted-foreground">
-          Developer. Thinker. Builder.
+          Developer. Hacker. Thinker. Builder.
         </p>
 
         <div className="flex gap-5 mt-4">
