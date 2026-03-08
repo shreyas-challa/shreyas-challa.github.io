@@ -1,35 +1,48 @@
-# NoigelBlog
+# Noigel Blog
 
-This repository contains a Vite + React blog site.
+Personal blog by [Shreyas "Noigel" Challa](https://github.com/shreyas-challa), built with React + Vite and deployed to GitHub Pages.
 
-Quick start
+## Stack
 
-- Install dependencies: `npm install`
-- Start development server: `npm run dev`
-- Build for production: `npm run build`
-- Preview production build locally: `npm run preview`
+- **React 19** + **Vite 7**
+- **Tailwind CSS v4**
+- **React Router v7** (BrowserRouter)
+- **Tiptap** — rich text editor for writing posts
+- **Supabase** — auth and database
+- **GSAP + Motion** — animations
+- **Radix UI** — accessible UI primitives
+- **Fuse.js** — fuzzy search
 
-Notes on deployment to GitHub Pages (username.github.io)
+## Development
 
-- For a user/organization page, create a repository named `username.github.io` and push the built static files to the repository's default branch (e.g. `main`).
-- Common approaches:
-	- Build locally (`npm run build`) and push the `dist` output to the Pages branch (or the repository root for user pages).
-	- Use a CI workflow (GitHub Actions) to build and deploy automatically from the source branch.
-	- Use a deployment tool like `gh-pages` to publish to a `gh-pages` branch.
+```bash
+npm install
+npm run dev
+```
 
-Example manual sequence (build and push `dist` to `main` for a user page):
+## Build & Deploy
 
 ```bash
 npm run build
-# from project root: copy or move the contents of `dist` into the repo root of username.github.io,
-# or use a tool/workflow to deploy the `dist` directory.
 ```
 
-If you'd like, I can add a GitHub Actions workflow or a `gh-pages` deployment script — tell me which you prefer.
+The `dist/` output is deployed to `shreyas-challa.github.io` (GitHub Pages user site). Push the built files to the `main` branch of the `shreyas-challa.github.io` repo.
 
-Files
+## Project Structure
 
-- Project entry: `src/main.jsx`
-- App: `src/App.jsx`
-
-For development questions or any adjustments to deployment, tell me what hosting/workflow you prefer and I'll add it.
+```
+src/
+├── main.jsx          # Entry point
+├── App.jsx           # Routes
+├── home.jsx          # Home page
+├── blog.jsx          # Single post view
+├── blogs.jsx         # All posts listing
+├── about.jsx         # About page
+├── create.jsx        # Post editor (protected)
+├── login.jsx         # Auth page
+├── auth-context.jsx  # Auth state
+├── database.js       # Supabase client
+├── data/             # Static post data
+├── components/       # Shared UI components
+└── images/           # Local image assets
+```
