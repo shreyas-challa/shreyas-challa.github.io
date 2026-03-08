@@ -66,7 +66,7 @@ export default function Blog() {
       });
   }, [id]);
 
-  const dockLinks = user ? [...links, createLink] : links;
+  const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links;
 
   if (loading) {
     return (

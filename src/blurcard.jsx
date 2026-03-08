@@ -82,10 +82,11 @@ export function BlurCard({ post }) {
   return (
     <div className='flex flex-col-reverse md:flex-row w-full max-w-[1200px] mx-auto px-4 md:px-0 gap-6 md:justify-between'>
       <div className='rounded-2xl w-full md:w-[600px] h-auto md:h-[500px] flex flex-col p-4 md:p-8'>
-        <h2 className='text-2xl md:text-3xl font-bold mb-2'>{post.title}</h2>
-        {subtitle && <p className='text-sm md:text-base font-medium mb-4 text-foreground'>{subtitle}</p>}
-        <div className='relative flex-1 overflow-hidden'>
-          {renderContent(post.content, 3)}
+        <h2 className='hidden md:block text-3xl font-bold mb-2'>{post.title}</h2>
+        {subtitle && <p className='hidden md:block text-base font-medium mb-4 text-foreground'>{subtitle}</p>}
+        <div className='relative flex-1 overflow-hidden max-h-[120px] md:max-h-none'>
+          <div className='hidden md:block'>{renderContent(post.content, 3)}</div>
+          <div className='md:hidden'>{renderContent(post.content, 1)}</div>
           <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent' />
         </div>
         <div className='mt-4 flex items-center justify-between'>

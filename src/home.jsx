@@ -45,7 +45,7 @@ function Home() {
   const latest = !isSearching ? posts[0] : null
   const cardPosts = !isSearching ? posts.slice(1) : posts
 
-  const dockLinks = user ? [...links, createLink] : links
+  const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
 
   return (
     <>

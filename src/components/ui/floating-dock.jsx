@@ -26,7 +26,7 @@ const FloatingDockMobile = ({
     <div className={cn("block md:hidden", className)}>
       <motion.div
         className="fixed z-50 bottom-2"
-        animate={open ? { right: 16, left: "auto", x: 0 } : { right: "50%", x: "50%" }}
+        animate={open ? { left: "auto", right: 16, x: 0 } : { left: "50%", right: "auto", x: "-50%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <div className="relative flex flex-row items-center gap-2">

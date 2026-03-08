@@ -6,7 +6,7 @@ import { useAuth } from './auth-context'
 
 export default function About() {
   const { user } = useAuth()
-  const dockLinks = user ? [...links, createLink] : links
+  const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full px-4">
       <div className="flex flex-col items-center gap-6 max-w-lg text-center">
