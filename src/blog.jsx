@@ -9,7 +9,8 @@ function renderContent(jsonString) {
   if (!jsonString) return null;
   let root;
   try {
-    root = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+    const clean = typeof jsonString === 'string' ? jsonString.replace(/[\r\n]+/g, ' ') : null;
+    root = clean ? JSON.parse(clean) : jsonString;
   } catch { return null; }
   const nodes = Array.isArray(root.content) ? root.content : [];
   return nodes.map((node, idx) => {

@@ -6,7 +6,8 @@ function extractExcerpt(contentJsonString, maxLength = 120) {
   if (!contentJsonString) return '';
   let text = '';
   try {
-    const json = typeof contentJsonString === 'string' ? JSON.parse(contentJsonString) : contentJsonString;
+    const clean = typeof contentJsonString === 'string' ? contentJsonString.replace(/[\r\n]+/g, ' ') : null;
+    const json = clean ? JSON.parse(clean) : contentJsonString;
     const walk = (n) => {
       if (!n || text.length >= maxLength) return;
       if (n.type === 'text' && n.text) text += n.text + ' ';

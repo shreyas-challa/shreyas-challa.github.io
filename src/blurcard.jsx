@@ -7,7 +7,8 @@ function extractExcerpt(contentJsonString, maxLength = 160) {
   if (!contentJsonString) return '';
   let text = '';
   try {
-    const json = typeof contentJsonString === 'string' ? JSON.parse(contentJsonString) : contentJsonString;
+    const clean = typeof contentJsonString === 'string' ? contentJsonString.replace(/[\r\n]+/g, ' ') : null;
+    const json = clean ? JSON.parse(clean) : contentJsonString;
     const walk = (node) => {
       if (!node || text.length >= maxLength) return;
       if (node.type === 'text' && node.text) {
@@ -26,7 +27,8 @@ function renderContent(jsonString, limitNodes = 6) {
   if (!jsonString) return null;
   let root;
   try {
-    root = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+    const clean = typeof jsonString === 'string' ? jsonString.replace(/[\r\n]+/g, ' ') : null;
+    root = clean ? JSON.parse(clean) : jsonString;
   } catch { return null; }
   const nodes = Array.isArray(root.content) ? root.content.slice(0, limitNodes) : [];
   const elements = nodes.map((node, idx) => {
