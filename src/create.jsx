@@ -325,13 +325,13 @@ function Create() {
           extensions={extensions}
           placeholder="Start writing... paste images directly, or type / for commands"
         >
-          {/* Minimal bubble menu — just inline formatting */}
+          {/* Minimal bubble menu — just inline formatting, icons only */}
           <EditorBubbleMenu>
-            <EditorFormatBold />
-            <EditorFormatItalic />
-            <EditorFormatUnderline />
-            <EditorFormatStrike />
-            <EditorFormatCode />
+            <EditorFormatBold hideName />
+            <EditorFormatItalic hideName />
+            <EditorFormatUnderline hideName />
+            <EditorFormatStrike hideName />
+            <EditorFormatCode hideName />
             <EditorLinkSelector />
           </EditorBubbleMenu>
         </EditorProvider>
