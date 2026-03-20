@@ -52,7 +52,7 @@ export default function About() {
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
   return (
     <div className="flex flex-col items-center w-full px-4">
-      <div className="flex flex-col items-center gap-6 max-w-lg text-center min-h-screen justify-center">
+      <div className="flex flex-col items-center gap-6 max-w-lg text-center pt-32 pb-12 justify-center">
         <div className="w-28 h-28 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-500 dark:from-neutral-600 dark:to-neutral-800 flex items-center justify-center text-4xl font-bold text-white select-none">
           S
         </div>
