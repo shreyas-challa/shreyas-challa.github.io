@@ -52,8 +52,8 @@ export default function About() {
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
   return (
     <div className="flex flex-col items-center w-full px-4">
-      <div className="flex flex-col items-center gap-6 max-w-lg text-center pt-32 pb-12 justify-center">
-        <div className="w-28 h-28 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-500 dark:from-neutral-600 dark:to-neutral-800 flex items-center justify-center text-4xl font-bold text-white select-none">
+      <div className="flex flex-col items-center gap-4 max-w-lg text-center pt-16 pb-8 justify-center">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-neutral-300 to-neutral-500 dark:from-neutral-600 dark:to-neutral-800 flex items-center justify-center text-3xl font-bold text-white select-none">
           S
         </div>
 
@@ -82,7 +82,7 @@ export default function About() {
       </div>
 
       {/* Projects Section */}
-      <div className="w-full max-w-4xl pb-32 pt-8">
+      <div className="w-full max-w-4xl pb-24 pt-4">
         <h2 className="text-2xl font-bold text-center mb-8">Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project) => (
