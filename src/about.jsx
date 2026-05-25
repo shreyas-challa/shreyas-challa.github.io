@@ -58,7 +58,7 @@ const projects = [
 
 const langColors = {
   Python: 'bg-blue-500',
-  C: 'bg-gray-500',
+  C: 'bg-indigo-500',
   Rust: 'bg-orange-600',
   Swift: 'bg-orange-500',
   JavaScript: 'bg-yellow-400',
