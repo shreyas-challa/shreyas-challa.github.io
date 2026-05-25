@@ -1,7 +1,7 @@
 import { FloatingDock } from './components/ui/floating-dock'
 import { links, createLink } from './links'
 import { EncryptedText } from '@/components/ui/encrypted-text'
-import { IconBrandGithub, IconBrandLinkedin, IconBrandX, IconExternalLink } from '@tabler/icons-react'
+import { IconBrandGithub, IconBrandLinkedin, IconBrandX, IconExternalLink, IconShieldCheck } from '@tabler/icons-react'
 import { useAuth } from './auth-context'
 
 const projects = [
@@ -56,6 +56,30 @@ const projects = [
   },
 ]
 
+const cves = [
+  {
+    id: 'CVE-2026-46395',
+    summary: 'Security vulnerability disclosed via GitHub Security Advisory.',
+    status: 'Published',
+    advisoryUrl: 'https://github.com/advisories/GHSA-6c8g-9hfh-pq5h',
+    writeupUrl: null,
+    pocUrl: null,
+  },
+  {
+    id: 'CVE-2026-46394',
+    summary: 'Confirmed and reserved — awaiting GitHub review and publication.',
+    status: 'Reserved',
+    advisoryUrl: null,
+    writeupUrl: null,
+    pocUrl: null,
+  },
+]
+
+const statusStyles = {
+  Published: 'bg-green-500/15 text-green-600 dark:text-green-400',
+  Reserved: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400',
+}
+
 const langColors = {
   Python: 'bg-blue-500',
   C: 'bg-indigo-500',
@@ -98,8 +122,55 @@ export default function About() {
         </div>
       </div>
 
+      {/* Security Disclosures Section */}
+      <div className="w-full max-w-4xl pt-4">
+        <h2 className="text-2xl font-bold text-center mb-8">Security Disclosures</h2>
+        <div className="flex flex-col gap-3">
+          {cves.map((cve) => (
+            <div
+              key={cve.id}
+              className="flex flex-col sm:flex-row sm:items-center gap-3 p-5 rounded-xl border border-border bg-card"
+            >
+              <div className="flex items-center gap-3 sm:w-56 shrink-0">
+                <IconShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
+                {cve.advisoryUrl ? (
+                  <a
+                    href={cve.advisoryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-sm font-semibold hover:text-primary transition-colors"
+                  >
+                    {cve.id}
+                  </a>
+                ) : (
+                  <span className="font-mono text-sm font-semibold">{cve.id}</span>
+                )}
+                <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[cve.status] || ''}`}>
+                  {cve.status}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                {cve.summary}
+              </p>
+              <div className="flex gap-3 shrink-0">
+                {cve.writeupUrl && (
+                  <a href={cve.writeupUrl} className="text-xs font-medium text-primary hover:underline">
+                    Writeup →
+                  </a>
+                )}
+                {cve.pocUrl && (
+                  <a href={cve.pocUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-primary hover:underline">
+                    PoC →
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Projects Section */}
-      <div className="w-full max-w-4xl pb-24 pt-4">
+      <div className="w-full max-w-4xl pb-24 pt-12">
         <h2 className="text-2xl font-bold text-center mb-8">Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {projects.map((project) => (
