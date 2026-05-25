@@ -6,11 +6,39 @@ import { useAuth } from './auth-context'
 
 const projects = [
   {
+    name: 'Lacuna',
+    description: 'Autonomous pentesting agent with a real-time D3 attack graph. Multi-backend LLM orchestrates enumeration, exploitation, and privilege escalation to root with safety guardrails.',
+    language: 'Python',
+    url: 'https://github.com/shreyas-challa/lacuna',
+    tags: ['AI', 'Security', 'Pentesting'],
+  },
+  {
+    name: 'WiFie',
+    description: 'Wi-Fi 6/6E/7 pentesting console for controlled lab work. Rust drives nl80211 and pcap directly — no airmon-ng wrappers — with a browser SPA rendering live telemetry on canvas.',
+    language: 'Rust',
+    url: 'https://github.com/shreyas-challa/wifie',
+    tags: ['Security', 'Wireless', 'Systems'],
+  },
+  {
     name: 'SecGen-AI',
-    description: 'Autonomous penetration testing agent powered by Claude. Drives through recon, exploitation, and privilege escalation by itself using tool-use.',
+    description: 'LLM-powered security research agent. Assists with vulnerability analysis, payload reasoning, and CVE triage using tool-use — a research copilot rather than an autonomous attacker.',
     language: 'Python',
     url: 'https://github.com/shreyas-challa/SecGen-ai',
-    tags: ['AI', 'Security', 'Pentesting'],
+    tags: ['AI', 'Security', 'Research'],
+  },
+  {
+    name: 'Fitrack',
+    description: 'Personal iOS workout tracker for hybrid training — PPL lifts plus Z2 and interval cardio. SwiftUI + SwiftData, Swift Charts for stats, zero third-party dependencies.',
+    language: 'Swift',
+    url: 'https://github.com/shreyas-challa/fitrack',
+    tags: ['iOS', 'SwiftUI', 'Fitness'],
+  },
+  {
+    name: 'Phil Swipe',
+    description: 'Interactive philosophy widget for your phone. Replaces the social-media unlock reflex with a daily thought-provoking idea, counterarguments, and follow-up prompts.',
+    language: 'JavaScript',
+    url: 'https://github.com/shreyas-challa/phil-swipe',
+    tags: ['Mobile', 'AI', 'Philosophy'],
   },
   {
     name: 'Malware Lab',
@@ -26,25 +54,14 @@ const projects = [
     url: 'https://github.com/shreyas-challa/DevDigest',
     tags: ['CLI', 'Productivity', 'News'],
   },
-  {
-    name: 'Gesture Recognition',
-    description: 'Real-time hand gesture recognition using computer vision and ML. Maps recognized gestures to automated system tasks.',
-    language: 'Python',
-    url: 'https://github.com/shreyas-challa/gesture-recognition',
-    tags: ['CV', 'ML', 'Automation'],
-  },
-  {
-    name: 'Local Search Engine',
-    description: 'Lightweight CLI tool to search through local notes and files with keyword and filetype filtering. Built for Obsidian vaults.',
-    language: 'Python',
-    url: 'https://github.com/shreyas-challa/Local-Search-Engine',
-    tags: ['CLI', 'Search', 'Productivity'],
-  },
 ]
 
 const langColors = {
   Python: 'bg-blue-500',
   C: 'bg-gray-500',
+  Rust: 'bg-orange-600',
+  Swift: 'bg-orange-500',
+  JavaScript: 'bg-yellow-400',
 }
 
 export default function About() {
