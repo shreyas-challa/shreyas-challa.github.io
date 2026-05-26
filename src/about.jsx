@@ -69,7 +69,7 @@ const cves = [
     id: 'CVE-2026-46394',
     summary: 'Confirmed and reserved, awaiting GitHub review and publication.',
     status: 'Reserved',
-    advisoryUrl: null,
+    advisoryUrl: 'https://github.com/haxtheweb/issues/security/advisories/GHSA-6jf3-9fgh-cmfr',
     writeupUrl: null,
     pocUrl: null,
   },
