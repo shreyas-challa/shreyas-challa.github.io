@@ -67,7 +67,7 @@ const cves = [
   },
   {
     id: 'CVE-2026-46394',
-    summary: 'Confirmed and reserved — awaiting GitHub review and publication.',
+    summary: 'Confirmed and reserved, awaiting GitHub review and publication.',
     status: 'Reserved',
     advisoryUrl: null,
     writeupUrl: null,
