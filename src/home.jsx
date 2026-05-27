@@ -36,32 +36,45 @@ function Home() {
   const fuse = useMemo(() => new Fuse(allPosts, {
     keys: ['title', 'sub_title'],
     threshold: 0.4,
+    includeScore: true,
   }), [allPosts])
-
-  const posts = useMemo(() => {
-    if (!query.trim()) return allPosts
-    return fuse.search(query).map(r => r.item)
-  }, [query, fuse, allPosts])
 
   const projectFuse = useMemo(() => new Fuse(projects, {
     keys: ['name', 'description', 'tags', 'language'],
     threshold: 0.4,
+    includeScore: true,
   }), [])
 
   const cveFuse = useMemo(() => new Fuse(cves, {
     keys: ['id', 'summary', 'status'],
     threshold: 0.4,
+    includeScore: true,
   }), [])
 
-  const matchedProjects = useMemo(() => {
-    if (!query.trim()) return []
-    return projectFuse.search(query).map(r => r.item)
-  }, [query, projectFuse])
+  // Lower Fuse score = better match. Track each section's best score so we can
+  // order sections by relevance instead of a fixed sequence.
+  const bestScore = (results) => results.length ? results[0].score ?? 1 : Infinity
 
-  const matchedCves = useMemo(() => {
-    if (!query.trim()) return []
-    return cveFuse.search(query).map(r => r.item)
-  }, [query, cveFuse])
+  const postResults = useMemo(() => query.trim() ? fuse.search(query) : [], [query, fuse])
+  const projectResults = useMemo(() => query.trim() ? projectFuse.search(query) : [], [query, projectFuse])
+  const cveResults = useMemo(() => query.trim() ? cveFuse.search(query) : [], [query, cveFuse])
+
+  const posts = query.trim() ? postResults.map(r => r.item) : allPosts
+  const matchedProjects = projectResults.map(r => r.item)
+  const matchedCves = cveResults.map(r => r.item)
+
+  // Sections sorted best-match-first; ties keep this declaration order.
+  const sectionOrder = useMemo(() => (
+    ['cves', 'projects', 'posts']
+      .map((key) => ({
+        key,
+        score: key === 'cves' ? bestScore(cveResults)
+          : key === 'projects' ? bestScore(projectResults)
+          : bestScore(postResults),
+      }))
+      .sort((a, b) => a.score - b.score)
+      .map((s) => s.key)
+  ), [cveResults, projectResults, postResults])
 
   const isSearching = query.trim().length > 0
   const latest = !isSearching ? posts[0] : null
@@ -104,67 +117,78 @@ function Home() {
         <div className='w-full max-w-7xl px-8 py-16'>
           {loading && <div className='text-muted-foreground text-center text-lg mt-8'>Loading posts...</div>}
 
-          {isSearching && matchedProjects.length > 0 && (
-            <div className='mb-12'>
-              <h2 className='text-3xl font-bold mb-8 text-foreground'>Projects</h2>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                {matchedProjects.map((project) => (
-                  <a
-                    key={project.name}
-                    href={project.url}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='group relative flex flex-col gap-3 p-5 rounded-xl border border-border bg-card hover:bg-accent/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5'
-                  >
-                    <div className='flex items-center justify-between'>
-                      <h3 className='text-lg font-semibold group-hover:text-primary transition-colors'>{project.name}</h3>
-                      <IconExternalLink className='w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity' />
-                    </div>
-                    <p className='text-sm text-muted-foreground leading-relaxed'>{project.description}</p>
-                    <div className='flex items-center justify-between mt-auto pt-2'>
-                      <div className='flex gap-2 flex-wrap'>
-                        {project.tags.map((tag) => (
-                          <span key={tag} className='text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground'>{tag}</span>
-                        ))}
-                      </div>
-                      <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
-                        <span className={`w-2.5 h-2.5 rounded-full ${langColors[project.language] || 'bg-neutral-400'}`} />
-                        {project.language}
-                      </div>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {isSearching && matchedCves.length > 0 && (
-            <div className='mb-12'>
-              <h2 className='text-3xl font-bold mb-8 text-foreground'>Security Disclosures</h2>
-              <div className='flex flex-col gap-3'>
-                {matchedCves.map((cve) => (
-                  <div key={cve.id} className='flex flex-col sm:flex-row sm:items-center gap-3 p-5 rounded-xl border border-border bg-card'>
-                    <div className='flex items-center gap-3 sm:w-56 shrink-0'>
-                      <IconShieldCheck className='w-5 h-5 text-muted-foreground shrink-0' />
-                      {cve.advisoryUrl ? (
-                        <a href={cve.advisoryUrl} target='_blank' rel='noopener noreferrer' className='font-mono text-sm font-semibold hover:text-primary transition-colors'>{cve.id}</a>
-                      ) : (
-                        <span className='font-mono text-sm font-semibold'>{cve.id}</span>
-                      )}
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[cve.status] || ''}`}>{cve.status}</span>
-                    </div>
-                    <p className='text-sm text-muted-foreground leading-relaxed flex-1'>{cve.summary}</p>
+          {isSearching && !loading && (() => {
+            const sections = {
+              projects: matchedProjects.length === 0 ? null : (
+                <div key='projects' className='mb-12'>
+                  <h2 className='text-3xl font-bold mb-8 text-foreground'>Projects</h2>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    {matchedProjects.map((project) => (
+                      <a
+                        key={project.name}
+                        href={project.url}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='group relative flex flex-col gap-3 p-5 rounded-xl border border-border bg-card hover:bg-accent/50 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5'
+                      >
+                        <div className='flex items-center justify-between'>
+                          <h3 className='text-lg font-semibold group-hover:text-primary transition-colors'>{project.name}</h3>
+                          <IconExternalLink className='w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity' />
+                        </div>
+                        <p className='text-sm text-muted-foreground leading-relaxed'>{project.description}</p>
+                        <div className='flex items-center justify-between mt-auto pt-2'>
+                          <div className='flex gap-2 flex-wrap'>
+                            {project.tags.map((tag) => (
+                              <span key={tag} className='text-xs px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground'>{tag}</span>
+                            ))}
+                          </div>
+                          <div className='flex items-center gap-1.5 text-xs text-muted-foreground'>
+                            <span className={`w-2.5 h-2.5 rounded-full ${langColors[project.language] || 'bg-neutral-400'}`} />
+                            {project.language}
+                          </div>
+                        </div>
+                      </a>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              ),
+              cves: matchedCves.length === 0 ? null : (
+                <div key='cves' className='mb-12'>
+                  <h2 className='text-3xl font-bold mb-8 text-foreground'>Security Disclosures</h2>
+                  <div className='flex flex-col gap-3'>
+                    {matchedCves.map((cve) => (
+                      <div key={cve.id} className='flex flex-col sm:flex-row sm:items-center gap-3 p-5 rounded-xl border border-border bg-card'>
+                        <div className='flex items-center gap-3 sm:w-56 shrink-0'>
+                          <IconShieldCheck className='w-5 h-5 text-muted-foreground shrink-0' />
+                          {cve.advisoryUrl ? (
+                            <a href={cve.advisoryUrl} target='_blank' rel='noopener noreferrer' className='font-mono text-sm font-semibold hover:text-primary transition-colors'>{cve.id}</a>
+                          ) : (
+                            <span className='font-mono text-sm font-semibold'>{cve.id}</span>
+                          )}
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[cve.status] || ''}`}>{cve.status}</span>
+                        </div>
+                        <p className='text-sm text-muted-foreground leading-relaxed flex-1'>{cve.summary}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ),
+              posts: posts.length === 0 ? null : (
+                <div key='posts' className='mb-12'>
+                  <Blogs posts={cardPosts} heading='Blog Posts' />
+                </div>
+              ),
+            }
 
-          {isSearching && posts.length === 0 && matchedProjects.length === 0 && matchedCves.length === 0 && (
-            <div className='text-muted-foreground text-center text-lg mt-8'>No results matching "{query}"</div>
-          )}
-          {!loading && (isSearching ? posts.length > 0 : true) && (
-            <Blogs posts={cardPosts} heading={isSearching ? "Blog Posts" : "Other Blog Posts"} />
+            const rendered = sectionOrder.map((key) => sections[key]).filter(Boolean)
+            if (rendered.length === 0) {
+              return <div className='text-muted-foreground text-center text-lg mt-8'>No results matching "{query}"</div>
+            }
+            return rendered
+          })()}
+
+          {!isSearching && !loading && (
+            <Blogs posts={cardPosts} heading='Other Blog Posts' />
           )}
         </div>
 
