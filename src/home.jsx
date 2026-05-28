@@ -157,8 +157,8 @@ function Home() {
                   <h2 className='text-3xl font-bold mb-8 text-foreground'>Security Disclosures</h2>
                   <div className='flex flex-col gap-3'>
                     {matchedCves.map((cve) => (
-                      <div key={cve.id} className='flex flex-col sm:flex-row sm:items-start gap-3 p-5 rounded-xl border border-border bg-card'>
-                        <div className='flex flex-col gap-1.5 sm:w-64 shrink-0'>
+                      <div key={cve.id} className='flex flex-col sm:flex-row sm:items-center gap-3 p-5 rounded-xl border border-border bg-card'>
+                        <div className='flex flex-col gap-1.5 sm:w-56 shrink-0'>
                           <div className='flex items-center gap-3 whitespace-nowrap'>
                             <IconShieldCheck className='w-5 h-5 text-muted-foreground shrink-0' />
                             {cve.advisoryUrl ? (
@@ -166,12 +166,12 @@ function Home() {
                             ) : (
                               <span className='font-mono text-sm font-semibold'>{cve.id}</span>
                             )}
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[cve.status] || ''}`}>{cve.status}</span>
                           </div>
                           {cve.product && (
                             <span className='text-xs text-muted-foreground pl-8'>{cve.product}</span>
                           )}
                         </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 self-center text-center ${statusStyles[cve.status] || ''}`}>{cve.status}</span>
                         <p className='text-sm text-muted-foreground leading-relaxed flex-1'>{cve.summary}</p>
                       </div>
                     ))}
