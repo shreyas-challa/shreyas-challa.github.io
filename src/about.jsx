@@ -46,32 +46,30 @@ export default function About() {
           {cves.map((cve) => (
             <div
               key={cve.id}
-              className="flex flex-col sm:flex-row sm:items-start gap-3 p-5 rounded-xl border border-border bg-card"
+              className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-border bg-card"
             >
-              <div className="flex flex-col gap-1.5 sm:w-56 shrink-0">
-                <div className="flex items-center gap-3">
-                  <IconShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
-                  {cve.advisoryUrl ? (
-                    <a
-                      href={cve.advisoryUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-sm font-semibold hover:text-primary transition-colors"
-                    >
-                      {cve.id}
-                    </a>
-                  ) : (
-                    <span className="font-mono text-sm font-semibold">{cve.id}</span>
-                  )}
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[cve.status] || ''}`}>
-                    {cve.status}
-                  </span>
-                </div>
-                {cve.product && (
-                  <span className="text-xs text-muted-foreground pl-8">{cve.product}</span>
+              <div className="flex items-center gap-3 sm:w-72 shrink-0">
+                <IconShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
+                {cve.advisoryUrl ? (
+                  <a
+                    href={cve.advisoryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-sm font-semibold hover:text-primary transition-colors"
+                  >
+                    {cve.id}
+                  </a>
+                ) : (
+                  <span className="font-mono text-sm font-semibold">{cve.id}</span>
                 )}
+                {cve.product && (
+                  <span className="text-xs text-muted-foreground">{cve.product}</span>
+                )}
+                <span className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[cve.status] || ''}`}>
+                  {cve.status}
+                </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+              <p className="text-sm text-muted-foreground leading-snug flex-1 line-clamp-2">
                 {cve.summary}
               </p>
               <div className="flex gap-3 shrink-0">
