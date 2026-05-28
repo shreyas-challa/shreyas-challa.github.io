@@ -48,8 +48,8 @@ export default function About() {
               key={cve.id}
               className="flex flex-col sm:flex-row sm:items-start gap-3 p-5 rounded-xl border border-border bg-card"
             >
-              <div className="flex flex-col gap-1.5 sm:w-56 shrink-0">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-1.5 sm:w-64 shrink-0">
+                <div className="flex items-center gap-3 whitespace-nowrap">
                   <IconShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
                   {cve.advisoryUrl ? (
                     <a
