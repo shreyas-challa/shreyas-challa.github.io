@@ -8,21 +8,21 @@ export const projects = [
   },
   {
     name: 'WiFie',
-    description: 'Wi-Fi 6/6E/7 pentesting console for controlled lab work. Rust drives nl80211 and pcap directly — no airmon-ng wrappers — with a browser SPA rendering live telemetry on canvas.',
+    description: 'Wi-Fi 6/6E/7 pentesting console for controlled lab work. Rust drives nl80211 and pcap directly, with no airmon-ng wrappers, and a browser SPA renders live telemetry on canvas.',
     language: 'Rust',
     url: 'https://github.com/shreyas-challa/wifie',
     tags: ['Security', 'Wireless', 'Systems'],
   },
   {
     name: 'SecGen-AI',
-    description: 'LLM-powered security research agent. Assists with vulnerability analysis, payload reasoning, and CVE triage using tool-use — a research copilot rather than an autonomous attacker.',
+    description: 'LLM-powered security research agent. Assists with vulnerability analysis, payload reasoning, and CVE triage using tool-use. Think of it as a research copilot rather than an autonomous attacker.',
     language: 'Python',
     url: 'https://github.com/shreyas-challa/SecGen-ai',
     tags: ['AI', 'Security', 'Research'],
   },
   {
     name: 'Fitrack',
-    description: 'Personal iOS workout tracker for hybrid training — PPL lifts plus Z2 and interval cardio. SwiftUI + SwiftData, Swift Charts for stats, zero third-party dependencies.',
+    description: 'Personal iOS workout tracker for hybrid training: PPL lifts plus Z2 and interval cardio. SwiftUI + SwiftData, Swift Charts for stats, zero third-party dependencies.',
     language: 'Swift',
     url: 'https://github.com/shreyas-challa/fitrack',
     tags: ['iOS', 'SwiftUI', 'Fitness'],
@@ -43,7 +43,7 @@ export const projects = [
   },
   {
     name: 'DevDigest',
-    description: 'A curated daily digest for developers focused on opinions, ideas, and insights — not tutorials. Aggregates from HN, Reddit, and curated blogs.',
+    description: 'A curated daily digest for developers focused on opinions, ideas, and insights, not tutorials. Aggregates from HN, Reddit, and curated blogs.',
     language: 'Python',
     url: 'https://github.com/shreyas-challa/DevDigest',
     tags: ['CLI', 'Productivity', 'News'],
