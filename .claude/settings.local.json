@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(gh api:*)",
+      "Bash(gh run:*)",
+      "WebFetch(domain:shreyas-challa.github.io)",
+      "Bash(curl:*)",
+      "WebFetch(domain:www.cosmos.so)",
+      "Bash(npx vite:*)",
+      "Bash(git config:*)",
+      "Bash(git filter-repo:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git push:*)",
+      "Bash(git:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

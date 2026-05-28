@@ -53,7 +53,7 @@ export const projects = [
 export const cves = [
   {
     id: 'CVE-2026-46395',
-    summary: 'Security vulnerability disclosed via GitHub Security Advisory.',
+    summary: 'Private key disclosure via broken HMAC implementation in HAXcms Node.js backend, allowing unauthenticated attackers to forge admin JWTs.',
     status: 'Published',
     advisoryUrl: 'https://github.com/advisories/GHSA-6c8g-9hfh-pq5h',
     writeupUrl: null,
@@ -61,7 +61,7 @@ export const cves = [
   },
   {
     id: 'CVE-2026-46394',
-    summary: 'Confirmed and reserved, awaiting GitHub review and publication.',
+    summary: 'OS command injection in HAXcms PHP backend Git.php library via unsanitized parameters passed to proc_open(), enabling arbitrary command execution.',
     status: 'Reserved',
     advisoryUrl: 'https://github.com/haxtheweb/issues/security/advisories/GHSA-6jf3-9fgh-cmfr',
     writeupUrl: null,
