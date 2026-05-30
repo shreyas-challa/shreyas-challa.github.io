@@ -1,6 +1,6 @@
 # Noigel Blog
 
-Personal blog by [Shreyas "Noigel" Challa](https://github.com/shreyas-challa), built with React + Vite and deployed to GitHub Pages.
+Personal blog and portfolio by [Shreyas "Noigel" Challa](https://github.com/shreyas-challa), built with React + Vite and deployed to GitHub Pages.
 
 ## Stack
 
@@ -20,6 +20,8 @@ npm install
 npm run dev
 ```
 
+Other scripts: `npm run lint` (ESLint), `npm run preview` (preview a production build).
+
 ## Build & Deploy
 
 ```bash
@@ -28,21 +30,34 @@ npm run build
 
 The `dist/` output is deployed to `shreyas-challa.github.io` (GitHub Pages user site). Push the built files to the `main` branch of the `shreyas-challa.github.io` repo.
 
+## Routes
+
+| Path         | Page         | Notes                          |
+| ------------ | ------------ | ------------------------------ |
+| `/`          | `home.jsx`   | Home / post feed               |
+| `/about`     | `about.jsx`  | Portfolio: projects + CVE disclosures |
+| `/blog/:id`  | `blog.jsx`   | Single post view               |
+| `/login`     | `login.jsx`  | Supabase auth                  |
+| `/create`    | `create.jsx` | Tiptap post editor (protected) |
+
 ## Project Structure
 
 ```
 src/
 ├── main.jsx          # Entry point
-├── App.jsx           # Routes
+├── App.jsx           # Routes + auth provider
 ├── home.jsx          # Home page
 ├── blog.jsx          # Single post view
-├── blogs.jsx         # All posts listing
-├── about.jsx         # About page
+├── about.jsx         # About / portfolio page
 ├── create.jsx        # Post editor (protected)
 ├── login.jsx         # Auth page
 ├── auth-context.jsx  # Auth state
 ├── database.js       # Supabase client
-├── data/             # Static post data
-├── components/       # Shared UI components
-└── images/           # Local image assets
+├── data/             # Static data (posts, portfolio projects, CVEs)
+├── components/ui/    # Shared UI components
+└── lib/              # Utilities
+
+public/images/        # Local image assets
 ```
+
+The About page renders portfolio content from `src/data/portfolio.js` — `projects`, `cves` (security disclosures with status badges), and supporting style maps.
