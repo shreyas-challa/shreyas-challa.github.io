@@ -11,7 +11,7 @@ import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
 import { supabase } from './database'
 import { useAuth } from './auth-context'
-import { projects, cves, statusStyles, langColors } from './data/portfolio'
+import { projects, cves, statusStyles, statusOrder, langColors } from './data/portfolio'
 import { IconShieldCheck, IconExternalLink } from '@tabler/icons-react'
 
 function Home() {
@@ -61,7 +61,12 @@ function Home() {
 
   const posts = query.trim() ? postResults.map(r => r.item) : allPosts
   const matchedProjects = projectResults.map(r => r.item)
-  const matchedCves = cveResults.map(r => r.item)
+  // Order by match relevance first; on equal scores, rank Published above
+  // Reserved rather than falling back to CVE-number order.
+  const matchedCves = [...cveResults]
+    .sort((a, b) => (a.score ?? 1) - (b.score ?? 1)
+      || (statusOrder[a.item.status] ?? 99) - (statusOrder[b.item.status] ?? 99))
+    .map(r => r.item)
 
   // Sections sorted best-match-first; ties keep this declaration order.
   const sectionOrder = useMemo(() => (

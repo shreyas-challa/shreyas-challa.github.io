@@ -76,6 +76,14 @@ export const statusStyles = {
   Reserved: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400',
 }
 
+// Lower = ranked higher. Used to break ties when search scores are equal so
+// Published CVEs surface above Reserved ones (instead of falling back to the
+// incidental CVE-number ordering).
+export const statusOrder = {
+  Published: 0,
+  Reserved: 1,
+}
+
 export const langColors = {
   Python: 'bg-blue-500',
   C: 'bg-indigo-500',
