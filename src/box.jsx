@@ -11,18 +11,27 @@ import { renderContent } from "./render-content";
 
 const GIBBERISH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-// Fixed-size decorative gibberish — deliberately NOT the real ciphertext, so its
-// size reveals nothing about the writeup's length or structure.
-function makeGibberish() {
-  const lines = [];
-  for (let l = 0; l < 14; l++) {
-    let line = "";
-    for (let c = 0; c < 72; c++) {
-      line += GIBBERISH_CHARS[Math.floor(Math.random() * GIBBERISH_CHARS.length)];
-    }
-    lines.push(line);
-  }
-  return lines.join("\n");
+// A FIXED decorative document skeleton, identical for every box and unrelated to
+// the real writeup, so it leaks no structure. It just makes the locked state
+// read as an encrypted document (headings / prose / a code block) instead of a
+// raw blob. Lengths are character counts that produce ragged, prose-like lines.
+const LOCKED_LAYOUT = [
+  { type: "heading", lens: [22] },
+  { type: "para", lens: [72, 70, 68, 41] },
+  { type: "heading", lens: [16] },
+  { type: "para", lens: [71, 69, 53] },
+  { type: "code", lens: [38, 26, 51, 19] },
+  { type: "para", lens: [72, 70, 31] },
+];
+
+function randStr(n) {
+  let s = "";
+  for (let i = 0; i < n; i++) s += GIBBERISH_CHARS[Math.floor(Math.random() * GIBBERISH_CHARS.length)];
+  return s;
+}
+
+function makeLockedDoc() {
+  return LOCKED_LAYOUT.map((block) => ({ type: block.type, lines: block.lens.map(randStr) }));
 }
 
 function formatDate(iso) {
@@ -41,7 +50,7 @@ export default function Box() {
   const [error, setError] = useState(null);
   const [unlocking, setUnlocking] = useState(false);
 
-  const gibberish = useMemo(() => makeGibberish(), []);
+  const lockedDoc = useMemo(() => makeLockedDoc(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -135,11 +144,32 @@ export default function Box() {
           </p>
         </div>
 
-        <div className="relative rounded-xl border border-border bg-card overflow-hidden">
-          <pre className="select-none break-all whitespace-pre-wrap p-5 text-xs leading-relaxed text-muted-foreground/50 blur-[1.5px] max-h-64 overflow-hidden font-mono">
-            {gibberish}
-          </pre>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card" />
+        <div className="rounded-xl border border-border bg-card p-6 sm:p-8 space-y-6 font-mono select-none">
+          {lockedDoc.map((block, i) => {
+            if (block.type === "heading") {
+              return (
+                <div key={i} className="text-base font-semibold text-foreground/35 break-all">
+                  {block.lines[0]}
+                </div>
+              );
+            }
+            if (block.type === "code") {
+              return (
+                <div key={i} className="rounded-md border border-border bg-muted/40 p-4 space-y-1.5 text-xs text-muted-foreground/40">
+                  {block.lines.map((line, j) => (
+                    <div key={j} className="break-all">{line}</div>
+                  ))}
+                </div>
+              );
+            }
+            return (
+              <div key={i} className="space-y-1.5 text-sm leading-relaxed text-muted-foreground/40">
+                {block.lines.map((line, j) => (
+                  <div key={j} className="break-all">{line}</div>
+                ))}
+              </div>
+            );
+          })}
         </div>
 
         <form onSubmit={handleUnlock} className="mt-6 flex flex-col gap-3">
