@@ -144,6 +144,26 @@ export default function Box() {
           </p>
         </div>
 
+        <form
+          onSubmit={handleUnlock}
+          className="sticky top-2 z-10 flex flex-col sm:flex-row gap-3 mb-8 p-3 rounded-xl border border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        >
+          <input
+            type="text"
+            value={hashInput}
+            onChange={(e) => setHashInput(e.target.value)}
+            placeholder="Enter root hash to unlock"
+            autoComplete="off"
+            spellCheck={false}
+            className="flex-1 px-4 py-2 border rounded-lg bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            required
+          />
+          <Button type="submit" className="sm:w-40" disabled={unlocking}>
+            {unlocking ? "Unlocking..." : "Unlock"}
+          </Button>
+        </form>
+        {error && <p className="text-sm text-red-500 text-center -mt-4 mb-6">{error}</p>}
+
         <div className="rounded-xl border border-border bg-card p-6 sm:p-8 space-y-6 font-mono select-none">
           {lockedDoc.map((block, i) => {
             if (block.type === "heading") {
@@ -171,23 +191,6 @@ export default function Box() {
             );
           })}
         </div>
-
-        <form onSubmit={handleUnlock} className="mt-6 flex flex-col gap-3">
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
-          <input
-            type="text"
-            value={hashInput}
-            onChange={(e) => setHashInput(e.target.value)}
-            placeholder="Root hash"
-            autoComplete="off"
-            spellCheck={false}
-            className="w-full px-4 py-2 border rounded-lg bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            required
-          />
-          <Button type="submit" className="w-full" disabled={unlocking}>
-            {unlocking ? "Unlocking..." : "Unlock writeup"}
-          </Button>
-        </form>
       </div>
 
       <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">
