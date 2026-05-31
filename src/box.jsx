@@ -144,10 +144,7 @@ export default function Box() {
           </p>
         </div>
 
-        <form
-          onSubmit={handleUnlock}
-          className="sticky top-2 z-10 flex flex-col sm:flex-row gap-3 mb-8 p-3 rounded-xl border border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-        >
+        <form onSubmit={handleUnlock} className="flex flex-col sm:flex-row gap-3 mb-2">
           <input
             type="text"
             value={hashInput}
@@ -162,9 +159,9 @@ export default function Box() {
             {unlocking ? "Unlocking..." : "Unlock"}
           </Button>
         </form>
-        {error && <p className="text-sm text-red-500 text-center -mt-4 mb-6">{error}</p>}
+        {error && <p className="text-sm text-red-500 text-center mb-2">{error}</p>}
 
-        <div className="rounded-xl border border-border bg-card p-6 sm:p-8 space-y-6 font-mono select-none">
+        <div className="mt-6 rounded-xl border border-border bg-card p-6 sm:p-8 space-y-6 font-mono select-none">
           {lockedDoc.map((block, i) => {
             if (block.type === "heading") {
               return (
