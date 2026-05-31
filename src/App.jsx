@@ -1,6 +1,7 @@
 import './App.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Blog from './blog';
+import Box from './box.jsx'
 import Home from './home.jsx'
 import Create from './create.jsx'
 import About from './about.jsx'
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog/:id" element={<Blog />} />
+          <Route path="/box/:slug" element={<Box />} />
           <Route path="/login" element={<Login />} />
           <Route path="/create" element={
             <ProtectedRoute>
