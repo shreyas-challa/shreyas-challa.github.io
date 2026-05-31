@@ -149,7 +149,7 @@ export default function Box() {
             type="text"
             value={hashInput}
             onChange={(e) => setHashInput(e.target.value)}
-            placeholder="Enter root hash to unlock"
+            placeholder="Root hash"
             autoComplete="off"
             spellCheck={false}
             className="flex-1 px-4 py-2 border rounded-lg bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
