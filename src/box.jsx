@@ -161,30 +161,26 @@ export default function Box() {
         </form>
         {error && <p className="text-sm text-red-500 text-center mb-2">{error}</p>}
 
-        <div className="mt-6 rounded-xl border border-border bg-card p-6 sm:p-8 space-y-6 font-mono select-none">
+        <div className="mt-10 select-none text-muted-foreground/40">
           {lockedDoc.map((block, i) => {
             if (block.type === "heading") {
               return (
-                <div key={i} className="text-base font-semibold text-foreground/35 break-all">
+                <h2 key={i} className="font-bold text-2xl mt-8 mb-4 break-all">
                   {block.lines[0]}
-                </div>
+                </h2>
               );
             }
             if (block.type === "code") {
               return (
-                <div key={i} className="rounded-md border border-border bg-muted/40 p-4 space-y-1.5 text-xs text-muted-foreground/40">
-                  {block.lines.map((line, j) => (
-                    <div key={j} className="break-all">{line}</div>
-                  ))}
-                </div>
+                <pre key={i} className="rounded-md border bg-muted p-4 text-sm overflow-auto my-4">
+                  <code className="break-all">{block.lines.join("\n")}</code>
+                </pre>
               );
             }
             return (
-              <div key={i} className="space-y-1.5 text-sm leading-relaxed text-muted-foreground/40">
-                {block.lines.map((line, j) => (
-                  <div key={j} className="break-all">{line}</div>
-                ))}
-              </div>
+              <p key={i} className="mb-4 leading-relaxed break-all">
+                {block.lines.join(" ")}
+              </p>
             );
           })}
         </div>
