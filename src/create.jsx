@@ -1,18 +1,7 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "./database";
 import { useAuth } from "./auth-context";
-import { Extension } from "@tiptap/core";
-import { Plugin } from "@tiptap/pm/state";
-import {
-  EditorBubbleMenu,
-  EditorFormatBold,
-  EditorFormatCode,
-  EditorFormatItalic,
-  EditorFormatStrike,
-  EditorFormatUnderline,
-  EditorLinkSelector,
-  EditorProvider,
-} from "@/components/kibo-ui/editor";
+import { WriteupEditor } from "./components/writeup-editor";
 import { ImageIcon, SaveIcon, Loader2Icon, XIcon, CheckIcon } from "lucide-react";
 
 // Upload an image file to Supabase and return the public URL
@@ -25,93 +14,6 @@ async function uploadImage(file) {
   const { data } = supabase.storage.from("blog-images").getPublicUrl(fileName);
   return data.publicUrl;
 }
-
-// Insert image into editor: show data URL instantly, replace with real URL after upload
-function insertImageFromFile(file, view) {
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    const dataUrl = reader.result;
-    const { schema } = view.state;
-    const imageNode = schema.nodes.image.create({ src: dataUrl, alt: file.name });
-    view.dispatch(view.state.tr.replaceSelectionWith(imageNode));
-
-    try {
-      const realUrl = await uploadImage(file);
-      // Walk the doc to find the data URL node and swap in the real URL
-      view.state.doc.descendants((node, pos) => {
-        if (node.type.name === "image" && node.attrs.src === dataUrl) {
-          view.dispatch(
-            view.state.tr.setNodeMarkup(pos, null, { ...node.attrs, src: realUrl })
-          );
-          return false;
-        }
-      });
-    } catch (e) {
-      console.error("Image upload failed:", e);
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-// Tiptap extension: paste or drop images directly into the editor
-const ImagePasteExtension = Extension.create({
-  name: "imagePaste",
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        props: {
-          handlePaste(view, event) {
-            const items = Array.from(event.clipboardData?.items || []);
-            const imageFile = items.find(
-              (item) => item.type.startsWith("image/") && item.kind === "file"
-            );
-            if (!imageFile) return false;
-
-            event.preventDefault();
-            const file = imageFile.getAsFile();
-            if (file) insertImageFromFile(file, view);
-            return true;
-          },
-          handleDrop(view, event) {
-            const files = Array.from(event.dataTransfer?.files || []);
-            const image = files.find((f) => f.type.startsWith("image/"));
-            if (!image) return false;
-
-            event.preventDefault();
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-              const dataUrl = reader.result;
-              const { schema } = view.state;
-              const imageNode = schema.nodes.image.create({ src: dataUrl, alt: image.name });
-              const dropPos = view.posAtCoords({ left: event.clientX, top: event.clientY });
-              if (dropPos) {
-                view.dispatch(view.state.tr.insert(dropPos.pos, imageNode));
-              } else {
-                view.dispatch(view.state.tr.replaceSelectionWith(imageNode));
-              }
-
-              try {
-                const realUrl = await uploadImage(image);
-                view.state.doc.descendants((node, pos) => {
-                  if (node.type.name === "image" && node.attrs.src === dataUrl) {
-                    view.dispatch(
-                      view.state.tr.setNodeMarkup(pos, null, { ...node.attrs, src: realUrl })
-                    );
-                    return false;
-                  }
-                });
-              } catch (e) {
-                console.error("Image upload failed:", e);
-              }
-            };
-            reader.readAsDataURL(image);
-            return true;
-          },
-        },
-      }),
-    ];
-  },
-});
 
 function Create() {
   const { user } = useAuth();
@@ -127,8 +29,6 @@ function Create() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [saved, setSaved] = useState(false);
-
-  const extensions = useMemo(() => [ImagePasteExtension], []);
 
   const handleUpdate = ({ editor }) => {
     setContent(editor.getJSON());
@@ -300,41 +200,7 @@ function Create() {
         />
 
         {/* Content editor — styled to match blog view rendering */}
-        <EditorProvider
-          className={[
-            "w-full",
-            // Remove focus outline
-            "[&_.ProseMirror-focused]:outline-none",
-            // Paragraphs
-            "[&_.ProseMirror_p]:mb-4 [&_.ProseMirror_p]:leading-relaxed",
-            // Headings — match blog view
-            "[&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h1]:text-3xl [&_.ProseMirror_h1]:mt-8 [&_.ProseMirror_h1]:mb-4",
-            "[&_.ProseMirror_h2]:font-bold [&_.ProseMirror_h2]:text-2xl [&_.ProseMirror_h2]:mt-8 [&_.ProseMirror_h2]:mb-4",
-            "[&_.ProseMirror_h3]:font-bold [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:mt-6 [&_.ProseMirror_h3]:mb-3",
-            // Images
-            "[&_.ProseMirror_img]:rounded-md [&_.ProseMirror_img]:my-6 [&_.ProseMirror_img]:max-w-full",
-            // Code blocks
-            "[&_.ProseMirror_pre]:rounded-md [&_.ProseMirror_pre]:my-4",
-            // Blockquotes
-            "[&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-muted-foreground/30 [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:italic [&_.ProseMirror_blockquote]:my-4",
-            // Min height for writing area
-            "[&_.ProseMirror]:min-h-[60vh]",
-          ].join(" ")}
-          content={content}
-          onUpdate={handleUpdate}
-          extensions={extensions}
-          placeholder="Start writing... paste images directly, or type / for commands"
-        >
-          {/* Minimal bubble menu — just inline formatting, icons only */}
-          <EditorBubbleMenu>
-            <EditorFormatBold hideName />
-            <EditorFormatItalic hideName />
-            <EditorFormatUnderline hideName />
-            <EditorFormatStrike hideName />
-            <EditorFormatCode hideName />
-            <EditorLinkSelector />
-          </EditorBubbleMenu>
-        </EditorProvider>
+        <WriteupEditor content={content} onUpdate={handleUpdate} uploadImage={uploadImage} />
 
         <div className="h-[200px]" />
       </div>
