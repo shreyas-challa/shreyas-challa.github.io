@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconLock, IconLockOpen } from "@tabler/icons-react";
-import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
 
 const GIBBERISH = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function randStr(n) {
@@ -14,11 +13,12 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 }
 
-// A single box card. Active boxes show ONLY public metadata (name + icon) over an
-// encrypted-looking body, so the writeup is visible-but-unreadable until solved.
-// No subtitle or content is rendered while locked. Retired boxes link to the open
-// writeup.
-function BoxCard({ box }) {
+// A single box card, sized to sit inside the normal blog-post grid. Active boxes
+// show ONLY public metadata (name + icon) over an encrypted-looking body, so the
+// writeup is visible-but-unreadable until solved. No subtitle or content is
+// rendered while locked. Clicking goes to /box/:slug, which asks for the root
+// hash. Retired boxes link straight to the open writeup.
+export function BoxCard({ box }) {
   const navigate = useNavigate();
   const lines = useMemo(() => [68, 72, 54, 70, 33].map(randStr), []);
 
@@ -74,21 +74,3 @@ function BoxCard({ box }) {
   );
 }
 
-export function BoxCards({ boxes, heading = "HTB Writeups" }) {
-  const list = boxes || [];
-  if (list.length === 0) return null;
-  return (
-    <div className="mb-12">
-      <RevealOnScroll delay={100} duration={700}>
-        <h2 className="text-3xl font-bold mb-8 text-foreground">{heading}</h2>
-      </RevealOnScroll>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {list.map((box, i) => (
-          <RevealOnScroll key={box.slug} delay={150 + i * 75} duration={700}>
-            <BoxCard box={box} />
-          </RevealOnScroll>
-        ))}
-      </div>
-    </div>
-  );
-}

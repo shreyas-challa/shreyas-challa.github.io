@@ -9,7 +9,6 @@ import { BlurCard } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
-import { BoxCards } from './boxcards'
 import { listBoxes } from './data/boxes'
 import { supabase } from './database'
 import { useAuth } from './auth-context'
@@ -202,10 +201,7 @@ function Home() {
           })()}
 
           {!isSearching && !loading && (
-            <>
-              <BoxCards boxes={boxes} heading='HTB Writeups' />
-              <Blogs posts={cardPosts} heading='Other Blog Posts' />
-            </>
+            <Blogs posts={cardPosts} boxes={boxes} heading='Latest' />
           )}
         </div>
 

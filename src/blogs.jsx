@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll'
 import { MinimalCard, MinimalCardImage, MinimalCardTitle, MinimalCardDescription } from '@/components/ui/minimal-card'
+import { BoxCard } from './boxcards'
 
 function extractExcerpt(contentJsonString, maxLength = 120) {
   if (!contentJsonString) return '';
@@ -18,20 +19,28 @@ function extractExcerpt(contentJsonString, maxLength = 120) {
   return text.trim().slice(0, maxLength) + (text.length > maxLength ? '…' : '');
 }
 
-function Blogs({ posts, heading = "Other Blog Posts" }) {
+function Blogs({ posts, boxes = [], heading = "Other Blog Posts" }) {
   const navigate = useNavigate();
   const list = posts || [];
+  const boxList = boxes || [];
   return (
     <div>
       <RevealOnScroll delay={100} duration={700}>
         <h2 className='text-3xl font-bold mb-8 text-foreground'>{heading}</h2>
       </RevealOnScroll>
-      {list.length === 0 && (
+      {list.length === 0 && boxList.length === 0 && (
         <div className='text-muted-foreground'>No posts yet.</div>
       )}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        {/* Active/encrypted boxes lead the feed (current content), then posts.
+            They render locked and link to /box/:slug for the hash prompt. */}
+        {boxList.map((box, i) => (
+          <RevealOnScroll key={`box-${box.slug}`} delay={150 + i*75} duration={700}>
+            <BoxCard box={box} />
+          </RevealOnScroll>
+        ))}
         {list.map((post, i) => (
-          <RevealOnScroll key={post.id} delay={150 + i*75} duration={700}>
+          <RevealOnScroll key={post.id} delay={150 + (boxList.length + i)*75} duration={700}>
             <div onClick={() => navigate(`/blog/${post.id}`)} className="cursor-pointer">
               <MinimalCard>
                 <MinimalCardImage
