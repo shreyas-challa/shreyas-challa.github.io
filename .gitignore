@@ -4,6 +4,9 @@ dist/
 .cache/
 coverage/
 
+# Obsidian-import work-in-progress writeups (pre-publish)
+drafts/
+
 .env
 .env.local
 .env.*.local
