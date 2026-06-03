@@ -6,6 +6,8 @@ coverage/
 
 # Obsidian-import work-in-progress writeups (pre-publish)
 drafts/
+# Local box logos/banners (kept out of git; embedded into drafts/uploaded to Supabase)
+local-assets/
 
 .env
 .env.local

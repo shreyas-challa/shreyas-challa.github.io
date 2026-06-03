@@ -8,7 +8,7 @@
 // Structural changes (re-describing a screenshot, reordering) go back to Claude
 // Code, which edits the same draft files — one source of truth.
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { renderContent } from "./render-content";
@@ -62,6 +62,45 @@ function CoverHeader({ meta }) {
       )}
       <h1 className="text-4xl font-bold">{meta.title || meta.name}</h1>
       {meta.subtitle && <p className="text-lg text-muted-foreground mt-2">{meta.subtitle}</p>}
+    </div>
+  );
+}
+
+// Inline-editable title/subtitle for Edit mode (mirrors the /create header).
+// Changes update meta; Save draft persists them.
+function EditableHeader({ meta, setMeta, coverInputRef }) {
+  return (
+    <div className="flex flex-col items-center text-center mt-8 mb-8">
+      {meta.cover ? (
+        <img
+          src={meta.cover}
+          alt={meta.name || meta.title}
+          className="w-[160px] h-[160px] rounded-2xl object-cover mb-6 cursor-pointer"
+          onClick={() => coverInputRef.current?.click()}
+          title="Click to replace the cover"
+        />
+      ) : (
+        <button
+          onClick={() => coverInputRef.current?.click()}
+          className="w-[160px] h-[160px] rounded-2xl border-2 border-dashed border-muted-foreground/25 mb-6 text-xs text-muted-foreground/50 hover:border-muted-foreground/40 cursor-pointer"
+        >
+          Add cover
+        </button>
+      )}
+      <input
+        type="text"
+        value={meta.title || ""}
+        onChange={(e) => setMeta({ ...meta, title: e.target.value })}
+        placeholder="Title"
+        className="w-full text-4xl font-bold text-center bg-transparent border-none outline-none placeholder:text-muted-foreground/25"
+      />
+      <input
+        type="text"
+        value={meta.subtitle || ""}
+        onChange={(e) => setMeta({ ...meta, subtitle: e.target.value })}
+        placeholder="Add a subtitle..."
+        className="w-full text-lg text-muted-foreground text-center mt-2 bg-transparent border-none outline-none placeholder:text-muted-foreground/25"
+      />
     </div>
   );
 }
@@ -171,6 +210,15 @@ export default function Draft() {
   const [savedAt, setSavedAt] = useState(null);
   const [publishMsg, setPublishMsg] = useState(null);
   const [publishing, setPublishing] = useState(false);
+  const coverInputRef = useRef(null);
+
+  const handleCoverFile = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setMeta((m) => ({ ...m, cover: reader.result }));
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -321,7 +369,14 @@ export default function Draft() {
 
         {mode === "edit" && (
           <>
-            <CoverHeader meta={meta} />
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverFile}
+            />
+            <EditableHeader meta={meta} setMeta={setMeta} coverInputRef={coverInputRef} />
             <WriteupEditor
               key={slug}
               content={doc}
