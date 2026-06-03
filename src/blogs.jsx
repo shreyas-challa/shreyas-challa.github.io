@@ -29,17 +29,17 @@ function Blogs({ posts, heading = "Other Blog Posts" }) {
       {list.length === 0 && (
         <div className='text-muted-foreground'>No posts yet.</div>
       )}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch'>
         {list.map((post, i) => (
-          <RevealOnScroll key={post.id} delay={150 + i*75} duration={700}>
-            <div onClick={() => navigate(`/blog/${post.id}`)} className="cursor-pointer">
-              <MinimalCard>
+          <RevealOnScroll key={post.id} delay={150 + i*75} duration={700} className="h-full">
+            <div onClick={() => navigate(`/blog/${post.id}`)} className="cursor-pointer h-full">
+              <MinimalCard className="flex h-full flex-col">
                 <MinimalCardImage
                   src={post.image || '/images/welcome-blog.jpg'}
                   alt={post.title}
                 />
-                <MinimalCardTitle>{post.title}</MinimalCardTitle>
-                <MinimalCardDescription>
+                <MinimalCardTitle className="line-clamp-2">{post.title}</MinimalCardTitle>
+                <MinimalCardDescription className="line-clamp-3">
                   {post.sub_title || extractExcerpt(post.content)}
                 </MinimalCardDescription>
               </MinimalCard>
