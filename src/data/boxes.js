@@ -53,6 +53,23 @@ export function isLocked(box, now = Date.now()) {
   return now < new Date(box.active_until).getTime()
 }
 
+// Public, safe-to-ship listing for the home page. Returns only metadata — never
+// the secret or decrypted content — plus the locked flag so the UI can show
+// active boxes in their encrypted state. Newest active window first. The `demo`
+// fixture is excluded.
+export function listBoxes(now = Date.now()) {
+  return Object.values(boxes)
+    .filter((b) => b.slug !== 'demo')
+    .map((b) => ({
+      slug: b.slug,
+      name: b.name,
+      cover: b.cover || null,
+      active_until: b.active_until,
+      locked: isLocked(b, now),
+    }))
+    .sort((a, b) => new Date(b.active_until).getTime() - new Date(a.active_until).getTime())
+}
+
 // Mock endpoint. Resolves with the box's public metadata + ciphertext, but
 // `secret` is only included once the box has retired (server-gated in prod).
 // Returns null for an unknown slug.

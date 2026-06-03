@@ -9,6 +9,8 @@ import { BlurCard } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
+import { BoxCards } from './boxcards'
+import { listBoxes } from './data/boxes'
 import { supabase } from './database'
 import { useAuth } from './auth-context'
 import { projects, cves, statusStyles, statusOrder, langColors } from './data/portfolio'
@@ -80,6 +82,8 @@ function Home() {
       .sort((a, b) => a.score - b.score)
       .map((s) => s.key)
   ), [cveResults, projectResults, postResults])
+
+  const boxes = useMemo(() => listBoxes(), [])
 
   const isSearching = query.trim().length > 0
   const latest = !isSearching ? posts[0] : null
@@ -198,7 +202,10 @@ function Home() {
           })()}
 
           {!isSearching && !loading && (
-            <Blogs posts={cardPosts} heading='Other Blog Posts' />
+            <>
+              <BoxCards boxes={boxes} heading='HTB Writeups' />
+              <Blogs posts={cardPosts} heading='Other Blog Posts' />
+            </>
           )}
         </div>
 

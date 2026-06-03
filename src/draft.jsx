@@ -323,7 +323,7 @@ export default function Draft() {
     <div className="min-h-screen bg-background">
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
-        <div className="max-w-[860px] mx-auto px-6 h-14 flex items-center justify-between gap-4">
+        <div className="max-w-[860px] mx-auto px-6 min-h-14 py-2 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1">
             {modes.map((m) => (
               <button
