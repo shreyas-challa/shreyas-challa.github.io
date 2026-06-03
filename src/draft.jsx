@@ -256,11 +256,19 @@ export default function Draft() {
     }
   }, [slug, doc, meta]);
 
-  // Post target: publish to Supabase (live feed), uploading screenshots to
-  // storage first. Requires being logged in (same as /create).
+  // Publish to Supabase (the live feed), uploading screenshots to storage first.
+  // Requires being logged in (same as /create). This publishes the DECRYPTED
+  // writeup as a normal readable post, so for a box it's the RETIREMENT step.
   const publishPost = useCallback(async () => {
     if (!supabase) return setPublishMsg("No Supabase client configured (set VITE_SUPABASE_* env).");
     if (!user) return setPublishMsg("Log in first (/login) to publish a post.");
+    // Guard: never expose a box that is still active.
+    if (meta.target === "box" && Date.now() < new Date(meta.active_until).getTime()) {
+      const ok = window.confirm(
+        "This box is still ACTIVE. Publishing to Supabase exposes the full writeup publicly and defeats the lock. Continue anyway?"
+      );
+      if (!ok) return;
+    }
     setPublishing(true);
     setPublishMsg(null);
     try {
@@ -348,11 +356,13 @@ export default function Draft() {
             <Button onClick={save} disabled={saving} size="sm" variant="outline">
               {saving ? "Saving..." : "Save draft"}
             </Button>
-            {!isBox && (
-              <Button onClick={publishPost} disabled={publishing} size="sm">
-                {publishing ? "Publishing..." : "Publish to Supabase"}
-              </Button>
-            )}
+            <Button onClick={publishPost} disabled={publishing} size="sm">
+              {publishing
+                ? "Publishing..."
+                : isBox
+                  ? "Publish to Supabase (retire)"
+                  : "Publish to Supabase"}
+            </Button>
           </div>
         </div>
       </div>
