@@ -29,6 +29,10 @@ export const EncryptedText = ({
   flipDelayMs = 50,
   encryptedClassName,
   revealedClassName,
+  // When true the text never resolves: it keeps scrambling forever and the real
+  // string is never placed in the DOM/aria-label. Used for active-box content so
+  // a refresh can't reveal the writeup.
+  frozen = false,
 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
@@ -58,11 +62,13 @@ export const EncryptedText = ({
 
       const elapsedMs = now - startTimeRef.current;
       const totalLength = text.length;
-      const currentRevealCount = Math.min(totalLength, Math.floor(elapsedMs / Math.max(1, revealDelayMs)));
+      const currentRevealCount = frozen
+        ? 0
+        : Math.min(totalLength, Math.floor(elapsedMs / Math.max(1, revealDelayMs)));
 
       setRevealCount(currentRevealCount);
 
-      if (currentRevealCount >= totalLength) {
+      if (!frozen && currentRevealCount >= totalLength) {
         return;
       }
 
@@ -93,14 +99,14 @@ export const EncryptedText = ({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isInView, text, revealDelayMs, charset, flipDelayMs]);
+  }, [isInView, text, revealDelayMs, charset, flipDelayMs, frozen]);
 
   if (!text) return null;
 
   return (
-    <motion.span ref={ref} className={cn(className)} aria-label={text} role="text">
+    <motion.span ref={ref} className={cn(className)} aria-label={frozen ? "encrypted" : text} role="text">
       {text.split("").map((char, index) => {
-        const isRevealed = index < revealCount;
+        const isRevealed = !frozen && index < revealCount;
         const displayChar = isRevealed
           ? char
           : char === " "

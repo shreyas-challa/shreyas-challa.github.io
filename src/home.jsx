@@ -5,7 +5,7 @@ import { links, createLink } from './links'
 import { PlaceholdersAndVanishInput } from './components/ui/placeholders-and-vanish-input'
 import { FloatingDock } from './components/ui/floating-dock'
 import { DotFlow } from './components/ui/gsap/dot-flow'
-import { BlurCard } from './blurcard'
+import { BlurCard, BoxHero } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
@@ -83,10 +83,13 @@ function Home() {
   ), [cveResults, projectResults, postResults])
 
   const boxes = useMemo(() => listBoxes(), [])
+  // An active (locked) box takes the hero slot; otherwise the latest post does.
+  const activeBox = useMemo(() => boxes.find((b) => b.locked) || null, [boxes])
 
   const isSearching = query.trim().length > 0
   const latest = !isSearching ? posts[0] : null
-  const cardPosts = !isSearching ? posts.slice(1) : posts
+  // When a box owns the hero, every post drops into the grid below.
+  const cardPosts = !isSearching ? (activeBox ? posts : posts.slice(1)) : posts
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
 
@@ -117,7 +120,7 @@ function Home() {
         {!isSearching && !loading && (
           <div className='w-full'>
             <MainHeading />
-            <BlurCard post={latest} />
+            {activeBox ? <BoxHero box={activeBox} /> : <BlurCard post={latest} />}
           </div>
         )}
 
@@ -201,7 +204,7 @@ function Home() {
           })()}
 
           {!isSearching && !loading && (
-            <Blogs posts={cardPosts} boxes={boxes} heading='Latest' />
+            <Blogs posts={cardPosts} heading='Other Blog Posts' />
           )}
         </div>
 
