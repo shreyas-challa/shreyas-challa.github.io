@@ -184,7 +184,9 @@ function Home() {
                             <span className='text-xs text-muted-foreground pl-8'>{cve.product}</span>
                           )}
                         </div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 self-center text-center ${statusStyles[cve.status] || ''}`}>{cve.status}</span>
+                        <div className='shrink-0 self-center flex justify-center sm:w-28'>
+                          <span className={`text-xs px-2 py-0.5 rounded-full text-center ${statusStyles[cve.status] || ''}`}>{cve.status}</span>
+                        </div>
                         <p className='text-sm text-muted-foreground leading-relaxed flex-1'>{cve.summary}</p>
                       </div>
                     ))}
