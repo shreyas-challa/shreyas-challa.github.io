@@ -11,6 +11,9 @@ export const RippleButton = React.forwardRef((
     rippleColor = "#A1FF40",
     duration = "600ms",
     onClick,
+    // Render as a different element (e.g. react-router <Link>) so modifier and
+    // middle clicks open in a new tab natively while normal clicks stay SPA.
+    as: Component = "button",
     ...props
   },
   ref
@@ -47,7 +50,7 @@ export const RippleButton = React.forwardRef((
   }, [buttonRipples, duration])
 
   return (
-    <button
+    <Component
       className={cn(
         "bg-background text-primary relative flex cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 px-4 py-2 text-center",
         className
@@ -75,7 +78,7 @@ export const RippleButton = React.forwardRef((
             }} />
         ))}
       </span>
-    </button>
+    </Component>
   );
 })
 

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { RevealOnScroll } from '@/components/ui/reveal-on-scroll'
 import { MinimalCard, MinimalCardImage, MinimalCardTitle, MinimalCardDescription } from '@/components/ui/minimal-card'
 import { EncryptedText } from '@/components/ui/encrypted-text'
@@ -9,12 +9,11 @@ import { IconLock } from '@tabler/icons-react'
 // description is frozen gibberish (never decrypts on refresh). Clicking goes to
 // /box/:slug, which prompts for the root hash.
 function EncryptedBoxCard({ box }) {
-  const navigate = useNavigate();
   const unlockDate = new Date(box.active_until).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
   return (
-    <div onClick={() => navigate(`/box/${box.slug}`)} className="cursor-pointer h-full">
+    <Link to={`/box/${box.slug}`} className="block cursor-pointer h-full">
       <MinimalCard className="flex h-full flex-col">
         <div className="relative">
           <MinimalCardImage src={box.cover || 'https://placehold.co/600x600/png'} alt={box.name} className="[&_img]:blur-[2px]" />
@@ -28,7 +27,7 @@ function EncryptedBoxCard({ box }) {
           <span className="mt-1 block text-xs text-muted-foreground">Active box · unlocks {unlockDate}</span>
         </MinimalCardDescription>
       </MinimalCard>
-    </div>
+    </Link>
   );
 }
 
@@ -49,7 +48,6 @@ function extractExcerpt(contentJsonString, maxLength = 120) {
 }
 
 function Blogs({ posts, boxes = [], heading = "Other Blog Posts" }) {
-  const navigate = useNavigate();
   const list = posts || [];
   const boxList = boxes || [];
   return (
@@ -68,7 +66,7 @@ function Blogs({ posts, boxes = [], heading = "Other Blog Posts" }) {
         ))}
         {list.map((post, i) => (
           <RevealOnScroll key={post.id} delay={150 + (boxList.length + i)*75} duration={700} className="h-full">
-            <div onClick={() => navigate(`/blog/${post.id}`)} className="cursor-pointer h-full">
+            <Link to={`/blog/${post.id}`} className="block cursor-pointer h-full">
               <MinimalCard className="flex h-full flex-col">
                 <MinimalCardImage
                   src={post.image || '/images/welcome-blog.jpg'}
@@ -79,7 +77,7 @@ function Blogs({ posts, boxes = [], heading = "Other Blog Posts" }) {
                   {post.sub_title || extractExcerpt(post.content)}
                 </MinimalCardDescription>
               </MinimalCard>
-            </div>
+            </Link>
           </RevealOnScroll>
         ))}
       </div>

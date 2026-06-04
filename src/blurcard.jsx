@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ProgressiveBlur } from './components/ui/motion-primitives/progressive-blur';
 import { EncryptedText } from "@/components/ui/encrypted-text";
 import { RippleButton } from './components/ui/ripple-button';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { IconLock } from '@tabler/icons-react';
 
 const GIBBERISH = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -78,7 +78,6 @@ function renderContent(jsonString, limitNodes = 6) {
 // decrypts on refresh). Only the public machine name is shown in the clear.
 // "Read more!" goes to /box/:slug, which prompts for the root hash.
 export function BoxHero({ box }) {
-  const navigate = useNavigate();
   const lines = useMemo(() => [86, 78, 72, 64].map(randStr), []);
   const unlockDate = new Date(box.active_until).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
@@ -99,7 +98,7 @@ export function BoxHero({ box }) {
         </div>
         <div className='mt-4 flex items-center justify-between'>
           <span className='text-xs text-muted-foreground'>Active · unlocks {unlockDate}</span>
-          <RippleButton duration={600} rippleColor="#ADD8E6" onClick={() => navigate(`/box/${box.slug}`)}>Read more!</RippleButton>
+          <RippleButton as={Link} to={`/box/${box.slug}`} duration={600} rippleColor="#ADD8E6">Read more!</RippleButton>
         </div>
       </div>
       <div className='relative aspect-square w-full max-w-[450px] mx-auto md:mx-0 overflow-hidden rounded-lg'>
@@ -126,7 +125,6 @@ export function BoxHero({ box }) {
 }
 
 export function BlurCard({ post }) {
-  const navigate = useNavigate();
   if (!post) {
     return (
       <div className='flex flex-col md:flex-row w-full max-w-[1200px] mx-auto px-4 md:px-0 gap-6 md:justify-between'>
@@ -152,7 +150,7 @@ export function BlurCard({ post }) {
         </div>
         <div className='mt-4 flex items-center justify-between'>
           <span className='text-xs text-muted-foreground'>Published {new Date(post.created_at).toLocaleDateString()}</span>
-          <RippleButton duration={600} rippleColor="#ADD8E6" onClick={() => navigate(`/blog/${post.id}`)}>Read more!</RippleButton>
+          <RippleButton as={Link} to={`/blog/${post.id}`} duration={600} rippleColor="#ADD8E6">Read more!</RippleButton>
         </div>
       </div>
       <div className='relative aspect-square w-full max-w-[450px] mx-auto md:mx-0 overflow-hidden rounded-lg'>
