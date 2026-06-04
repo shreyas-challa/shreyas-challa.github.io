@@ -165,8 +165,8 @@ export function BlurCard({ post }) {
         />
         <div className='absolute bottom-0 left-0'>
           <div className='flex flex-col items-start gap-0 px-5 py-4'>
-            <p className='text-base font-medium text-white'><EncryptedText text={post.title} revealDelayMs={18}/></p>
-            {subtitle && <span className='mb-2 text-base text-zinc-300'><EncryptedText text={subtitle} revealDelayMs={12}/></span>}
+            <p className='text-base font-medium text-black dark:text-white'><EncryptedText text={post.title} revealDelayMs={18}/></p>
+            {subtitle && <span className='mb-2 text-base text-zinc-700 dark:text-zinc-300'><EncryptedText text={subtitle} revealDelayMs={12}/></span>}
           </div>
         </div>
       </div>
