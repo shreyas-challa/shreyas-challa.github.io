@@ -31,9 +31,13 @@ export default function Blog() {
   async function handleDelete() {
     if (!supabase || !post) return;
     if (!window.confirm(`Delete "${post.title}"? This cannot be undone.`)) return;
-    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    const { data, error } = await supabase.from('posts').delete().eq('id', post.id).select();
     if (error) {
       window.alert(`Delete failed: ${error.message}`);
+      return;
+    }
+    if (!data || data.length === 0) {
+      window.alert('Nothing was deleted. The database is blocking this delete (no RLS delete policy). Add a delete policy in Supabase, or remove the row from the dashboard.');
       return;
     }
     navigate('/');
