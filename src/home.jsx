@@ -5,7 +5,7 @@ import { links, createLink } from './links'
 import { PlaceholdersAndVanishInput } from './components/ui/placeholders-and-vanish-input'
 import { FloatingDock } from './components/ui/floating-dock'
 import { DotFlow } from './components/ui/gsap/dot-flow'
-import { BlurCard, BoxHero } from './blurcard'
+import { BlurCard } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
@@ -83,13 +83,15 @@ function Home() {
   ), [cveResults, projectResults, postResults])
 
   const boxes = useMemo(() => listBoxes(), [])
-  // An active (locked) box takes the hero slot; otherwise the latest post does.
-  const activeBox = useMemo(() => boxes.find((b) => b.locked) || null, [boxes])
+  // Active (locked) boxes show as encrypted cards in the grid below, never the
+  // hero. The latest post always owns the hero. A retired box has already been
+  // republished as a normal post, so it never appears here.
+  const lockedBoxes = useMemo(() => boxes.filter((b) => b.locked), [boxes])
 
   const isSearching = query.trim().length > 0
   const latest = !isSearching ? posts[0] : null
-  // When a box owns the hero, every post drops into the grid below.
-  const cardPosts = !isSearching ? (activeBox ? posts : posts.slice(1)) : posts
+  // The latest post is the hero, so the rest drop into the grid below.
+  const cardPosts = !isSearching ? posts.slice(1) : posts
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
 
@@ -120,7 +122,7 @@ function Home() {
         {!isSearching && !loading && (
           <div className='w-full'>
             <MainHeading />
-            {activeBox ? <BoxHero box={activeBox} /> : <BlurCard post={latest} />}
+            <BlurCard post={latest} />
           </div>
         )}
 
@@ -204,7 +206,7 @@ function Home() {
           })()}
 
           {!isSearching && !loading && (
-            <Blogs posts={cardPosts} heading='Other Blog Posts' />
+            <Blogs posts={cardPosts} boxes={lockedBoxes} heading='Other Blog Posts' />
           )}
         </div>
 
