@@ -28,6 +28,17 @@ export default function Blog() {
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links;
 
+  async function handleDelete() {
+    if (!supabase || !post) return;
+    if (!window.confirm(`Delete "${post.title}"? This cannot be undone.`)) return;
+    const { error } = await supabase.from('posts').delete().eq('id', post.id);
+    if (error) {
+      window.alert(`Delete failed: ${error.message}`);
+      return;
+    }
+    navigate('/');
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-full">
@@ -62,6 +73,14 @@ export default function Blog() {
         <span className="text-xs text-muted-foreground mb-8">
           {new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </span>
+        {user && (
+          <button
+            onClick={handleDelete}
+            className="mb-8 text-xs font-medium text-red-500 border border-red-500/40 rounded-md px-3 py-1.5 hover:bg-red-500/10 transition-colors"
+          >
+            Delete post
+          </button>
+        )}
         <div className="w-full">
           {renderContent(post.content)}
         </div>
