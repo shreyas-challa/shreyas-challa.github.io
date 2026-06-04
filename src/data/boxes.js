@@ -34,21 +34,6 @@ const importedBoxes = Object.fromEntries(
 
 const boxes = {
   ...importedBoxes,
-  // Test fixture. Root hash to unlock: 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d
-  // active_until is in the future, so it is currently LOCKED.
-  demo: {
-    slug: 'demo',
-    name: 'ActiveBox (Demo)',
-    active_until: '2026-12-31T00:00:00Z',
-    // The root hash. In production this lives server-side and is only released
-    // after active_until — see the security model note above.
-    secret: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d',
-    encrypted: {
-      ciphertext: "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",
-      iv: "wtFrU8dVLsxzYaFy",
-      salt: "Hxvh6M85CkY4GrLF+CBApg==",
-    },
-  },
 }
 
 export function isLocked(box, now = Date.now()) {
@@ -57,11 +42,9 @@ export function isLocked(box, now = Date.now()) {
 
 // Public, safe-to-ship listing for the home page. Returns only metadata — never
 // the secret or decrypted content — plus the locked flag so the UI can show
-// active boxes in their encrypted state. Newest active window first. The `demo`
-// fixture is excluded.
+// active boxes in their encrypted state. Newest active window first.
 export function listBoxes(now = Date.now()) {
   return Object.values(boxes)
-    .filter((b) => b.slug !== 'demo')
     .map((b) => ({
       slug: b.slug,
       name: b.name,

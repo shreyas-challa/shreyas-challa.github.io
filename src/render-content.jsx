@@ -1,6 +1,17 @@
 // Renders a TipTap doc (JSON string or object) to React nodes.
 // Shared by blog.jsx and box.jsx so locked and normal writeups render identically.
 
+// Only allow safe link schemes. Blocks javascript:/data:/vbscript: hrefs that
+// would otherwise turn stored post content into an XSS vector. Returns undefined
+// for anything that is not http(s), mailto, a relative path, or an anchor.
+function safeHref(href) {
+  if (typeof href !== 'string') return undefined;
+  const v = href.trim();
+  if (v.startsWith('/') || v.startsWith('#') || v.startsWith('./') || v.startsWith('../')) return v;
+  if (/^(https?:|mailto:)/i.test(v)) return v;
+  return undefined;
+}
+
 // Render a single text node honoring its inline marks (code, bold, italic,
 // underline, strike, link). Without this, marks applied in the editor — most
 // notably inline `code` — flatten to plain text in the rendered view.
@@ -15,13 +26,13 @@ function renderText(node, key) {
       case 'code':
         el = <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em]">{el}</code>;
         break;
-      case 'link':
-        el = (
-          <a href={mark.attrs?.href} target="_blank" rel="noreferrer" className="text-blue-500 underline">
-            {el}
-          </a>
-        );
+      case 'link': {
+        const href = safeHref(mark.attrs?.href);
+        el = href
+          ? <a href={href} target="_blank" rel="noreferrer noopener" className="text-blue-500 underline">{el}</a>
+          : <span className="text-blue-500 underline">{el}</span>;
         break;
+      }
       default: break;
     }
   }
