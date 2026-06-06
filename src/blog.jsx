@@ -26,10 +26,18 @@ function parseDoc(content) {
   const empty = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "" }] }] };
   if (!content) return empty;
   if (typeof content === "object") return content;
+  // Try a faithful parse first so well-formed docs round-trip untouched. Some
+  // older rows hold raw line breaks that break JSON.parse; the reader strips
+  // those before parsing, so fall back to the same cleaning rather than wiping
+  // the body to a blank canvas.
   try {
     return JSON.parse(content);
   } catch {
-    return empty;
+    try {
+      return JSON.parse(content.replace(/[\r\n]+/g, " "));
+    } catch {
+      return empty;
+    }
   }
 }
 
