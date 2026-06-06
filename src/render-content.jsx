@@ -140,8 +140,8 @@ function renderNode(node, key) {
             })}
           </blockquote>
           {author && (
-            <figcaption className="mt-3 text-right text-sm font-medium not-italic text-muted-foreground">
-              {author}
+            <figcaption className="mt-3 text-right text-sm font-medium italic text-muted-foreground">
+              - {author}
             </figcaption>
           )}
         </figure>
