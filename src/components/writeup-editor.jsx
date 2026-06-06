@@ -93,7 +93,7 @@ const EDITOR_CLASSES = [
   "[&_.ProseMirror_h3]:font-bold [&_.ProseMirror_h3]:text-xl [&_.ProseMirror_h3]:mt-6 [&_.ProseMirror_h3]:mb-3",
   "[&_.ProseMirror_img]:rounded-md [&_.ProseMirror_img]:my-6 [&_.ProseMirror_img]:max-w-full",
   "[&_.ProseMirror_pre]:rounded-md [&_.ProseMirror_pre]:my-4",
-  "[&_.ProseMirror_blockquote]:border-l-2 [&_.ProseMirror_blockquote]:border-muted-foreground/30 [&_.ProseMirror_blockquote]:pl-4 [&_.ProseMirror_blockquote]:italic [&_.ProseMirror_blockquote]:my-4",
+  "[&_.ProseMirror_blockquote]:my-6 [&_.ProseMirror_blockquote_p]:mb-2 [&_.ProseMirror_blockquote_p:last-child]:mb-0",
   "[&_.ProseMirror]:min-h-[60vh]",
 ].join(" ");
 

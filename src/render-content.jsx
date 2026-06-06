@@ -70,6 +70,40 @@ export function renderContent(jsonString) {
         if (!src) return null;
         return <img key={idx} src={src} alt={alt || ''} className="rounded-md my-6 max-w-full" />;
       }
+      case 'blockquote': {
+        const children = Array.isArray(node.content) ? node.content : [];
+        // Attribution convention: if the quote's last line starts with a
+        // hyphen marker ("- Name"), pull it out as the author shown bottom-
+        // right. Everything above it is the quote body. No marker => no author.
+        let bodyNodes = children;
+        let author = null;
+        const last = children[children.length - 1];
+        if (last && last.type === 'paragraph') {
+          const text = (last.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
+          const m = text.match(/^\s*[-–—]\s+(.+)$/);
+          if (m && m[1].trim()) {
+            author = m[1].trim();
+            bodyNodes = children.slice(0, -1);
+          }
+        }
+        return (
+          <figure key={idx} className="my-6 rounded-lg border border-border bg-muted/50 px-5 py-4">
+            <blockquote className="italic leading-relaxed text-foreground/90">
+              {bodyNodes.map((c, i) => {
+                if (c.type !== 'paragraph') return null;
+                const hasText = (c.content || []).some((t) => t.type === 'text' && t.text);
+                if (!hasText) return <div key={i} className="h-2" />;
+                return <p key={i} className="mb-2 last:mb-0">{renderInline(c.content)}</p>;
+              })}
+            </blockquote>
+            {author && (
+              <figcaption className="mt-3 text-right text-sm font-medium not-italic text-muted-foreground">
+                {author}
+              </figcaption>
+            )}
+          </figure>
+        );
+      }
       case 'codeBlock': {
         const codeText = (node.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
         return (

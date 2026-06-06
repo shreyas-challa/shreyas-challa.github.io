@@ -502,7 +502,7 @@ export const EditorProvider = ({
       },
       blockquote: {
         HTMLAttributes: {
-          class: cn("border-l border-l-2 pl-2"),
+          class: cn("rounded-lg border bg-muted/50 px-5 py-4 italic"),
         },
       },
       code: {
