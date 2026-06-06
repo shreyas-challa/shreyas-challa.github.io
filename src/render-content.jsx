@@ -40,7 +40,44 @@ function renderText(node, key) {
 }
 
 function renderInline(content) {
-  return (content || []).filter((c) => c.type === 'text').map((c, i) => renderText(c, i));
+  return (content || [])
+    .map((c, i) => {
+      if (c.type === 'text') return renderText(c, i);
+      if (c.type === 'hardBreak') return <br key={i} />;
+      return null;
+    })
+    .filter(Boolean);
+}
+
+// Pull a quote's attribution out of its body. The author can be either its own
+// trailing paragraph or the last soft-broken line, in both cases starting with
+// a hyphen marker ("- Name"). Returns the remaining body nodes plus the author.
+function extractAuthor(children) {
+  const last = children[children.length - 1];
+  if (!last || last.type !== 'paragraph') return { bodyNodes: children, author: null };
+
+  // Split the last paragraph's inline content into visual lines on hardBreaks.
+  const lines = [[]];
+  for (const c of last.content || []) {
+    if (c.type === 'hardBreak') lines.push([]);
+    else lines[lines.length - 1].push(c);
+  }
+  const lastLine = lines[lines.length - 1];
+  const text = lastLine.filter((c) => c.type === 'text').map((c) => c.text).join('');
+  const m = text.match(/^\s*[-–—]\s+(.+)$/);
+  if (!m || !m[1].trim()) return { bodyNodes: children, author: null };
+
+  const author = m[1].trim();
+  const before = children.slice(0, -1);
+  // Rebuild whatever preceded the author line back into a paragraph, rejoining
+  // the remaining soft-broken lines so the quote body is unchanged.
+  const remaining = [];
+  lines.slice(0, -1).forEach((ln, i) => {
+    if (i > 0) remaining.push({ type: 'hardBreak' });
+    remaining.push(...ln);
+  });
+  const bodyNodes = remaining.length ? [...before, { type: 'paragraph', content: remaining }] : before;
+  return { bodyNodes, author };
 }
 
 // Render a single block node. Recursive so list items (which wrap paragraphs
@@ -88,20 +125,10 @@ function renderNode(node, key) {
       );
     case 'blockquote': {
       const children = Array.isArray(node.content) ? node.content : [];
-      // Attribution convention: if the quote's last line starts with a
-      // hyphen marker ("- Name"), pull it out as the author shown bottom-
-      // right. Everything above it is the quote body. No marker => no author.
-      let bodyNodes = children;
-      let author = null;
-      const last = children[children.length - 1];
-      if (last && last.type === 'paragraph') {
-        const text = (last.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
-        const m = text.match(/^\s*[-–—]\s+(.+)$/);
-        if (m && m[1].trim()) {
-          author = m[1].trim();
-          bodyNodes = children.slice(0, -1);
-        }
-      }
+      // Attribution convention: the quote's last line (its own paragraph or a
+      // soft-broken line) starting with a hyphen marker ("- Name") becomes the
+      // author shown on its own line, bottom-right. No marker => no author.
+      const { bodyNodes, author } = extractAuthor(children);
       return (
         <figure key={key} className="my-6 rounded-lg border border-border bg-muted/50 px-5 py-4">
           <blockquote className="italic leading-relaxed text-foreground/90">
