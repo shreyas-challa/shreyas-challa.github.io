@@ -43,6 +43,96 @@ function renderInline(content) {
   return (content || []).filter((c) => c.type === 'text').map((c, i) => renderText(c, i));
 }
 
+// Render a single block node. Recursive so list items (which wrap paragraphs
+// and can nest further lists) render through the same path as top-level blocks.
+function renderNode(node, key) {
+  switch (node.type) {
+    case 'heading': {
+      const level = node.attrs?.level || 2;
+      const inner = renderInline(node.content);
+      if (level === 1) return <h1 key={key} className="font-bold text-3xl mt-8 mb-4">{inner}</h1>;
+      if (level === 2) return <h2 key={key} className="font-bold text-2xl mt-8 mb-4">{inner}</h2>;
+      return <h3 key={key} className="font-bold text-xl mt-6 mb-3">{inner}</h3>;
+    }
+    case 'paragraph': {
+      const hasText = (node.content || []).some((c) => c.type === 'text' && c.text);
+      if (!hasText) return <div key={key} className="h-4" />;
+      return <p key={key} className="mb-4 leading-relaxed">{renderInline(node.content)}</p>;
+    }
+    case 'image': {
+      const { src, alt } = node.attrs || {};
+      if (!src) return null;
+      return <img key={key} src={src} alt={alt || ''} className="rounded-md my-6 max-w-full" />;
+    }
+    case 'bulletList':
+      return (
+        <ul key={key} className="list-disc pl-6 mb-4 space-y-1 leading-relaxed">
+          {(node.content || []).map((c, i) => renderNode(c, i))}
+        </ul>
+      );
+    case 'orderedList':
+      return (
+        <ol key={key} className="list-decimal pl-6 mb-4 space-y-1 leading-relaxed">
+          {(node.content || []).map((c, i) => renderNode(c, i))}
+        </ol>
+      );
+    case 'listItem':
+      return (
+        <li key={key}>
+          {(node.content || []).map((c, i) =>
+            // Tiptap wraps each item's text in a paragraph; render it inline so
+            // list rows stay tight instead of inheriting paragraph margins.
+            c.type === 'paragraph' ? <span key={i}>{renderInline(c.content)}</span> : renderNode(c, i)
+          )}
+        </li>
+      );
+    case 'blockquote': {
+      const children = Array.isArray(node.content) ? node.content : [];
+      // Attribution convention: if the quote's last line starts with a
+      // hyphen marker ("- Name"), pull it out as the author shown bottom-
+      // right. Everything above it is the quote body. No marker => no author.
+      let bodyNodes = children;
+      let author = null;
+      const last = children[children.length - 1];
+      if (last && last.type === 'paragraph') {
+        const text = (last.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
+        const m = text.match(/^\s*[-–—]\s+(.+)$/);
+        if (m && m[1].trim()) {
+          author = m[1].trim();
+          bodyNodes = children.slice(0, -1);
+        }
+      }
+      return (
+        <figure key={key} className="my-6 rounded-lg border border-border bg-muted/50 px-5 py-4">
+          <blockquote className="italic leading-relaxed text-foreground/90">
+            {bodyNodes.map((c, i) => {
+              if (c.type !== 'paragraph') return null;
+              const hasText = (c.content || []).some((t) => t.type === 'text' && t.text);
+              if (!hasText) return <div key={i} className="h-2" />;
+              return <p key={i} className="mb-2 last:mb-0">{renderInline(c.content)}</p>;
+            })}
+          </blockquote>
+          {author && (
+            <figcaption className="mt-3 text-right text-sm font-medium not-italic text-muted-foreground">
+              {author}
+            </figcaption>
+          )}
+        </figure>
+      );
+    }
+    case 'codeBlock': {
+      const codeText = (node.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
+      return (
+        <pre key={key} className="rounded-md border bg-muted p-4 text-sm overflow-auto my-4">
+          <code>{codeText}</code>
+        </pre>
+      );
+    }
+    default:
+      return null;
+  }
+}
+
 export function renderContent(jsonString) {
   if (!jsonString) return null;
   let root;
@@ -51,69 +141,5 @@ export function renderContent(jsonString) {
     root = clean ? JSON.parse(clean) : jsonString;
   } catch { return null; }
   const nodes = Array.isArray(root.content) ? root.content : [];
-  return nodes.map((node, idx) => {
-    switch (node.type) {
-      case 'heading': {
-        const level = node.attrs?.level || 2;
-        const inner = renderInline(node.content);
-        if (level === 1) return <h1 key={idx} className="font-bold text-3xl mt-8 mb-4">{inner}</h1>;
-        if (level === 2) return <h2 key={idx} className="font-bold text-2xl mt-8 mb-4">{inner}</h2>;
-        return <h3 key={idx} className="font-bold text-xl mt-6 mb-3">{inner}</h3>;
-      }
-      case 'paragraph': {
-        const hasText = (node.content || []).some((c) => c.type === 'text' && c.text);
-        if (!hasText) return <div key={idx} className="h-4" />;
-        return <p key={idx} className="mb-4 leading-relaxed">{renderInline(node.content)}</p>;
-      }
-      case 'image': {
-        const { src, alt } = node.attrs || {};
-        if (!src) return null;
-        return <img key={idx} src={src} alt={alt || ''} className="rounded-md my-6 max-w-full" />;
-      }
-      case 'blockquote': {
-        const children = Array.isArray(node.content) ? node.content : [];
-        // Attribution convention: if the quote's last line starts with a
-        // hyphen marker ("- Name"), pull it out as the author shown bottom-
-        // right. Everything above it is the quote body. No marker => no author.
-        let bodyNodes = children;
-        let author = null;
-        const last = children[children.length - 1];
-        if (last && last.type === 'paragraph') {
-          const text = (last.content || []).filter((c) => c.type === 'text').map((c) => c.text).join('');
-          const m = text.match(/^\s*[-–—]\s+(.+)$/);
-          if (m && m[1].trim()) {
-            author = m[1].trim();
-            bodyNodes = children.slice(0, -1);
-          }
-        }
-        return (
-          <figure key={idx} className="my-6 rounded-lg border border-border bg-muted/50 px-5 py-4">
-            <blockquote className="italic leading-relaxed text-foreground/90">
-              {bodyNodes.map((c, i) => {
-                if (c.type !== 'paragraph') return null;
-                const hasText = (c.content || []).some((t) => t.type === 'text' && t.text);
-                if (!hasText) return <div key={i} className="h-2" />;
-                return <p key={i} className="mb-2 last:mb-0">{renderInline(c.content)}</p>;
-              })}
-            </blockquote>
-            {author && (
-              <figcaption className="mt-3 text-right text-sm font-medium not-italic text-muted-foreground">
-                {author}
-              </figcaption>
-            )}
-          </figure>
-        );
-      }
-      case 'codeBlock': {
-        const codeText = (node.content || []).filter(c => c.type === 'text').map(c => c.text).join('\n');
-        return (
-          <pre key={idx} className="rounded-md border bg-muted p-4 text-sm overflow-auto my-4">
-            <code>{codeText}</code>
-          </pre>
-        );
-      }
-      default:
-        return null;
-    }
-  });
+  return nodes.map((node, idx) => renderNode(node, idx));
 }
