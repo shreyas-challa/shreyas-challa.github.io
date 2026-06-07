@@ -4,11 +4,26 @@ import { MinimalCard, MinimalCardImage, MinimalCardTitle, MinimalCardDescription
 import { EncryptedText } from '@/components/ui/encrypted-text'
 import { IconLock } from '@tabler/icons-react'
 
-// A still-active box rendered as a grid card. The machine name shows in the
-// clear, but the writeup stays encrypted: the cover is blurred and the
-// description is frozen gibberish (never decrypts on refresh). Clicking goes to
-// /box/:slug, which prompts for the root hash.
-function EncryptedBoxCard({ box }) {
+// A box rendered as a grid card. While active (locked) the writeup stays
+// encrypted: the machine name shows, but the cover is blurred and the
+// description is frozen gibberish that never decrypts on refresh. Once retired
+// (unlocked) it becomes a normal readable card with the real description.
+// Either way clicking goes to /box/:slug.
+function BoxCard({ box }) {
+  if (!box.locked) {
+    return (
+      <Link to={`/box/${box.slug}`} className="block cursor-pointer h-full">
+        <MinimalCard className="flex h-full flex-col">
+          <MinimalCardImage src={box.cover || 'https://placehold.co/600x600/png'} alt={box.name} />
+          <MinimalCardTitle className="line-clamp-2">{box.name}</MinimalCardTitle>
+          <MinimalCardDescription className="line-clamp-3">
+            {box.description || 'Read the writeup.'}
+          </MinimalCardDescription>
+        </MinimalCard>
+      </Link>
+    );
+  }
+
   const unlockDate = new Date(box.active_until).toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
@@ -61,7 +76,7 @@ function Blogs({ posts, boxes = [], heading = "Other Blog Posts" }) {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch'>
         {boxList.map((box, i) => (
           <RevealOnScroll key={`box-${box.slug}`} delay={150 + i*75} duration={700} className="h-full">
-            <EncryptedBoxCard box={box} />
+            <BoxCard box={box} />
           </RevealOnScroll>
         ))}
         {list.map((post, i) => (

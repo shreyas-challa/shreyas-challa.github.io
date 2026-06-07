@@ -67,7 +67,12 @@ async function main() {
     cover: meta.cover || null,
     encrypted,
   }
-  if (releaseSecret) entry.secret = meta.secret
+  // Only a RETIRED box exposes its secret and subtitle. While active, the
+  // subtitle is withheld too — it spells out the exploit chain.
+  if (releaseSecret) {
+    entry.secret = meta.secret
+    entry.description = meta.subtitle || null
+  }
 
   const boxesDir = path.join(root, 'src', 'data', 'boxes')
   await mkdir(boxesDir, { recursive: true })

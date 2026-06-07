@@ -51,6 +51,9 @@ export function listBoxes(now = Date.now()) {
       cover: b.cover || null,
       active_until: b.active_until,
       locked: isLocked(b, now),
+      // Only present on retired boxes (the publish script withholds it while
+      // active). Lets the home grid show a real description once unlocked.
+      description: b.description || null,
     }))
     .sort((a, b) => new Date(b.active_until).getTime() - new Date(a.active_until).getTime())
 }

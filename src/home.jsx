@@ -82,11 +82,10 @@ function Home() {
       .map((s) => s.key)
   ), [cveResults, projectResults, postResults])
 
-  const boxes = useMemo(() => listBoxes(), [])
-  // Active (locked) boxes show as encrypted cards in the grid below, never the
-  // hero. The latest post always owns the hero. A retired box has already been
-  // republished as a normal post, so it never appears here.
-  const lockedBoxes = useMemo(() => boxes.filter((b) => b.locked), [boxes])
+  // Boxes show as cards in the grid below, never the hero (the latest post owns
+  // that). Active boxes render encrypted; once retired they render as normal
+  // readable cards linking to the now-unlocked writeup.
+  const gridBoxes = useMemo(() => listBoxes(), [])
 
   const isSearching = query.trim().length > 0
   const latest = !isSearching ? posts[0] : null
@@ -208,7 +207,7 @@ function Home() {
           })()}
 
           {!isSearching && !loading && (
-            <Blogs posts={cardPosts} boxes={lockedBoxes} heading='Other Blog Posts' />
+            <Blogs posts={cardPosts} boxes={gridBoxes} heading='Other Blog Posts' />
           )}
         </div>
 
