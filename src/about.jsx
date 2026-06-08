@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { FloatingDock } from './components/ui/floating-dock'
 import { links, createLink } from './links'
 import { EncryptedText } from '@/components/ui/encrypted-text'
@@ -16,7 +17,11 @@ export default function About() {
         </div>
 
         <h1 className="text-4xl font-bold">
-          <EncryptedText text='Shreyas "Noigel" Challa' />
+          <EncryptedText text='Shreyas "' />
+          <Link to="/blog/6" className="text-primary hover:underline" title="Read 'about me'">
+            <EncryptedText text="Noigel" />
+          </Link>
+          <EncryptedText text='" Challa' />
         </h1>
 
         <p className="text-lg text-muted-foreground">
