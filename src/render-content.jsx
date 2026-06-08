@@ -130,7 +130,7 @@ function renderNode(node, key) {
       // author shown on its own line, bottom-right. No marker => no author.
       const { bodyNodes, author } = extractAuthor(children);
       return (
-        <figure key={key} className="my-6 rounded-lg border border-border bg-muted/50 px-5 py-4">
+        <figure key={key} className="my-6 border-l-[3px] border-muted-foreground/40 pl-5">
           <blockquote className="italic leading-relaxed text-foreground/90">
             {bodyNodes.map((c, i) => {
               if (c.type !== 'paragraph') return null;
