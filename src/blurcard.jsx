@@ -4,73 +4,13 @@ import { EncryptedText } from "@/components/ui/encrypted-text";
 import { RippleButton } from './components/ui/ripple-button';
 import { Link } from 'react-router-dom';
 import { IconLock } from '@tabler/icons-react';
+import { renderContent } from './render-content';
 
 const GIBBERISH = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function randStr(n) {
   let s = "";
   for (let i = 0; i < n; i++) s += GIBBERISH[Math.floor(Math.random() * GIBBERISH.length)];
   return s;
-}
-
-function extractExcerpt(contentJsonString, maxLength = 160) {
-  if (!contentJsonString) return '';
-  let text = '';
-  try {
-    const clean = typeof contentJsonString === 'string' ? contentJsonString.replace(/[\r\n]+/g, ' ') : null;
-    const json = clean ? JSON.parse(clean) : contentJsonString;
-    const walk = (node) => {
-      if (!node || text.length >= maxLength) return;
-      if (node.type === 'text' && node.text) {
-        text += node.text + ' ';
-      }
-      if (Array.isArray(node.content)) node.content.forEach(walk);
-    };
-    walk(json);
-  } catch (_) {
-    return '';
-  }
-  return text.trim().slice(0, maxLength) + (text.length > maxLength ? '…' : '');
-}
-
-function renderContent(jsonString, limitNodes = 6) {
-  if (!jsonString) return null;
-  let root;
-  try {
-    const clean = typeof jsonString === 'string' ? jsonString.replace(/[\r\n]+/g, ' ') : null;
-    root = clean ? JSON.parse(clean) : jsonString;
-  } catch { return null; }
-  const nodes = Array.isArray(root.content) ? root.content.slice(0, limitNodes) : [];
-  const elements = nodes.map((node, idx) => {
-    switch (node.type) {
-      case 'paragraph': {
-        const text = (node.content || [])
-          .filter(c => c.type === 'text' && c.text)
-          .map(c => c.text)
-          .join(' ');
-        if (!text) return <div key={idx} className="h-2" />; // keep spacing for empty paragraphs
-        return <p key={idx} className="text-sm leading-relaxed mb-3 text-muted-foreground">{text}</p>;
-      }
-      case 'image': {
-        const { src, alt } = node.attrs || {};
-        if (!src) return null;
-        return <img key={idx} src={src} alt={alt || ''} className="rounded-md my-4 max-w-full" />;
-      }
-      case 'codeBlock': {
-        const codeText = (node.content || [])
-          .filter(c => c.type === 'text' && c.text)
-          .map(c => c.text)
-          .join('\n');
-        return (
-          <pre key={idx} className="rounded-md border bg-background p-3 text-xs overflow-auto">
-            <code>{codeText}</code>
-          </pre>
-        );
-      }
-      default:
-        return null;
-    }
-  });
-  return <>{elements}</>;
 }
 
 // Featured hero for an ACTIVE box. Same layout as BlurCard, but the body is
@@ -136,7 +76,6 @@ export function BlurCard({ post }) {
 
   const cover = post.image || 'https://placehold.co/600x600/png';
   const subtitle = post.sub_title || '';
-  const excerpt = subtitle || extractExcerpt(post.content);
 
   return (
     <div className='flex flex-col-reverse md:flex-row w-full max-w-[1200px] mx-auto px-4 md:px-0 gap-6 md:justify-between'>
@@ -144,8 +83,8 @@ export function BlurCard({ post }) {
         <h2 className='hidden md:block text-3xl font-bold mb-2'>{post.title}</h2>
         {subtitle && <p className='hidden md:block text-base font-medium mb-4 text-foreground'>{subtitle}</p>}
         <div className='relative flex-1 overflow-hidden max-h-[120px] md:max-h-none'>
-          <div className='hidden md:block'>{renderContent(post.content, 3)}</div>
-          <div className='md:hidden'>{renderContent(post.content, 1)}</div>
+          <div className='hidden md:block'>{renderContent(post.content, { limit: 3 })}</div>
+          <div className='md:hidden'>{renderContent(post.content, { limit: 1 })}</div>
           <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent' />
         </div>
         <div className='mt-4 flex items-center justify-between'>

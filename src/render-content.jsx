@@ -160,13 +160,26 @@ function renderNode(node, key) {
   }
 }
 
-export function renderContent(jsonString) {
+export function renderContent(jsonString, options = {}) {
+  const { limit } = options;
   if (!jsonString) return null;
   let root;
   try {
     const clean = typeof jsonString === 'string' ? jsonString.replace(/[\r\n]+/g, ' ') : null;
     root = clean ? JSON.parse(clean) : jsonString;
   } catch { return null; }
-  const nodes = Array.isArray(root.content) ? root.content : [];
+  let nodes = Array.isArray(root.content) ? root.content : [];
+  if (limit != null) {
+    // Preview mode (hero card): drop blank spacer nodes (empty paragraphs,
+    // horizontal rules) so the limited node budget is spent on real content
+    // instead of rendering an empty box.
+    nodes = nodes
+      .filter((n) => {
+        if (n.type === 'horizontalRule') return false;
+        if (n.type === 'paragraph') return (n.content || []).some((c) => c.type === 'text' && c.text);
+        return true;
+      })
+      .slice(0, limit);
+  }
   return nodes.map((node, idx) => renderNode(node, idx));
 }
