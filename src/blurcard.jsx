@@ -160,7 +160,7 @@ export function BlurCard({ post }) {
           className='absolute inset-0 object-cover w-full h-full'
         />
         <ProgressiveBlur
-          className='pointer-events-none absolute bottom-0 left-0 h-[25%] w-full'
+          className={`pointer-events-none absolute bottom-0 left-0 w-full ${subtitle ? 'h-[25%]' : 'h-[15%]'}`}
           blurIntensity={6}
         />
         <div className='absolute bottom-0 left-0'>
