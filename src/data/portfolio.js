@@ -64,7 +64,7 @@ export const cves = [
     id: 'CVE-2026-46394',
     product: 'HAXcms (PHP)',
     summary: 'OS command injection in the Git.php library via unsanitized parameters passed to proc_open(), enabling arbitrary command execution.',
-    status: 'Reserved',
+    status: 'Published',
     advisoryUrl: 'https://github.com/haxtheweb/issues/security/advisories/GHSA-6jf3-9fgh-cmfr',
     writeupUrl: null,
     pocUrl: null,
