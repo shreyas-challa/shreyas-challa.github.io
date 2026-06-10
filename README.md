@@ -16,23 +16,6 @@ The site serves three kinds of content: blog posts backed by Supabase, a portfol
 - **Fuse.js**: fuzzy search across posts, projects, and CVEs
 - **Web Crypto**: AES-GCM encryption for active box writeups
 
-## Development
-
-```bash
-npm install
-npm run dev
-```
-
-Other scripts: `npm run lint` (ESLint), `npm run preview` (preview a production build).
-
-## Build & Deploy
-
-```bash
-npm run build
-```
-
-The `dist/` output is deployed to `shreyas-challa.github.io` (GitHub Pages user site). Push the built files to the `main` branch of the `shreyas-challa.github.io` repo.
-
 ## Routes
 
 | Path           | Page         | Notes                                             |
@@ -66,6 +49,26 @@ Obsidian note in, published writeup out, with a local review step in between:
    - Post target: use the "Publish to Supabase" button on the draft page while logged in. It uploads embedded screenshots to Supabase storage, swaps in hosted URLs, and inserts the post row.
 
 `scripts/encrypt-box.mjs <plaintext.json> <root-hash>` is the standalone encryption helper behind the publish script.
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+Supabase-backed features (the live feed, auth, publishing) need a `.env` file (gitignored):
+
+```
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
+
+Without these the Supabase client is a null stub and the rest of the site still runs. Other scripts: `npm run lint` (ESLint), `npm run build`, `npm run preview`.
+
+## Deploy
+
+Pushing to `main` triggers `.github/workflows/deploy.yml`: GitHub Actions installs dependencies, builds with the Supabase secrets injected, and deploys `dist/` to GitHub Pages through the official Pages actions. Nothing pre-built is committed to the repo. Deep links survive refreshes thanks to the redirect in `public/404.html` and the restore script in `index.html`.
 
 ## Project Structure
 
