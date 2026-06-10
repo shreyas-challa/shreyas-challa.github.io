@@ -35,13 +35,21 @@ The `dist/` output is deployed to `shreyas-challa.github.io` (GitHub Pages user 
 
 ## Routes
 
-| Path         | Page         | Notes                          |
-| ------------ | ------------ | ------------------------------ |
-| `/`          | `home.jsx`   | Home / post feed               |
-| `/about`     | `about.jsx`  | Portfolio: projects + CVE disclosures |
-| `/blog/:id`  | `blog.jsx`   | Single post view               |
-| `/login`     | `login.jsx`  | Supabase auth                  |
-| `/create`    | `create.jsx` | Tiptap post editor (protected) |
+| Path           | Page         | Notes                                             |
+| -------------- | ------------ | ------------------------------------------------- |
+| `/`            | `home.jsx`   | Post feed, encrypted box cards, fuzzy search      |
+| `/about`       | `about.jsx`  | Portfolio: projects + CVE disclosures             |
+| `/blog/:id`    | `blog.jsx`   | Single post view with owner-only inline edit mode |
+| `/box/:slug`   | `box.jsx`    | Box writeup, locked while the box is active       |
+| `/draft/:slug` | `draft.jsx`  | Draft review page, dev server only (never built)  |
+| `/login`       | `login.jsx`  | Supabase auth                                     |
+| `/create`      | `create.jsx` | Tiptap post editor (protected)                    |
+
+## Content model
+
+**Posts** live in a Supabase `posts` table and are written in the Tiptap editor at `/create` (or imported through the writeup pipeline below). The home page lists published posts newest first, and the latest post owns the hero card. Content is stored as Tiptap JSON and rendered by `src/render-content.jsx`, a single renderer shared by every reader view. It handles headings, lists, quote blocks with author attribution, syntax-highlighted code blocks (lowlight), images, and inline marks, and it sanitizes link hrefs so only http(s), mailto, relative, and anchor URLs survive.
+
+**Box writeups** are static encrypted modules in `src/data/boxes/`, one auto-generated file per box. While a box is active, `/box/:slug` shows a lock screen and the writeup can only be opened by entering the box's root hash. Retired boxes decrypt automatically. Active boxes also appear on the home grid as locked cards with scrambled preview text.
 
 ## Project Structure
 
