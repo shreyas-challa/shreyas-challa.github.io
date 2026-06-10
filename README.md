@@ -51,6 +51,22 @@ The `dist/` output is deployed to `shreyas-challa.github.io` (GitHub Pages user 
 
 **Box writeups** are static encrypted modules in `src/data/boxes/`, one auto-generated file per box. While a box is active, `/box/:slug` shows a lock screen and the writeup can only be opened by entering the box's root hash. Retired boxes decrypt automatically. Active boxes also appear on the home grid as locked cards with scrambled preview text.
 
+## Box encryption model
+
+The writeup plaintext, including screenshots embedded as base64 data URIs, is AES-GCM encrypted with a key derived from the box's root hash via PBKDF2 (250k iterations). `src/lib/crypto.js` uses only Web Crypto primitives, so the exact same code encrypts in Node and decrypts in the browser. While a box is active, the repo and the shipped bundle contain ciphertext only: the root hash is never stored anywhere. A wrong hash fails the GCM auth tag outright, so there is no partial or garbled output to scrape. Once the box retires, the writeup is republished with `--release-secret`, which embeds the hash so the page auto-decrypts for everyone.
+
+## Writeup pipeline
+
+Obsidian note in, published writeup out, with a local review step in between:
+
+1. **Import**: `node scripts/import-obsidian.mjs <note.md> [--slug s] [--target box|post]` parses the note into a Tiptap doc, resolves `![[Pasted image ...]]` embeds against the vault and inlines them as base64, and writes `drafts/<slug>.json` + `drafts/<slug>.meta.json` (both gitignored). The `/import-writeup` Claude Code command in `.claude/commands/` drives this end to end, including writing the prose around each screenshot.
+2. **Review**: open `/draft/<slug>` on the dev server. The page renders the draft exactly as readers will see it, supports inline editing (persisted back to the draft files through a dev-only API defined in `vite.config.js`), and for box targets previews the real lock screen and unlock flow.
+3. **Publish**:
+   - Box target: `node scripts/publish-writeup.mjs <slug>` encrypts the draft with the root hash and writes `src/data/boxes/<slug>.js`, which `boxes.js` picks up automatically via `import.meta.glob`. Re-run with `--release-secret` after the box retires.
+   - Post target: use the "Publish to Supabase" button on the draft page while logged in. It uploads embedded screenshots to Supabase storage, swaps in hosted URLs, and inserts the post row.
+
+`scripts/encrypt-box.mjs <plaintext.json> <root-hash>` is the standalone encryption helper behind the publish script.
+
 ## Project Structure
 
 ```
