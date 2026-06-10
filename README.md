@@ -1,17 +1,20 @@
 # Noigel Blog
 
-Personal blog and portfolio by [Shreyas "Noigel" Challa](https://github.com/shreyas-challa), built with React + Vite and deployed to GitHub Pages.
+Personal blog, portfolio, and security writeup site by [Shreyas "Noigel" Challa](https://github.com/shreyas-challa), built with React + Vite and deployed to GitHub Pages at [shreyas-challa.github.io](https://shreyas-challa.github.io).
+
+The site serves three kinds of content: blog posts backed by Supabase, a portfolio page with projects and CVE disclosures, and HTB box writeups that ship encrypted and stay locked until the box retires.
 
 ## Stack
 
 - **React 19** + **Vite 7**
-- **Tailwind CSS v4**
-- **React Router v7** (BrowserRouter)
-- **Tiptap** — rich text editor for writing posts
-- **Supabase** — auth and database
-- **GSAP + Motion** — animations
-- **Radix UI** — accessible UI primitives
-- **Fuse.js** — fuzzy search
+- **Tailwind CSS v4** with shadcn/ui conventions (zinc palette, see `DESIGN_SYSTEM.md`)
+- **React Router v7** (BrowserRouter, with a GitHub Pages SPA redirect shim)
+- **Tiptap v3**: rich text editor for writing and editing posts
+- **Supabase**: auth, posts table, and image storage (stubbed out when env vars are absent)
+- **GSAP + Motion**: animations
+- **Radix UI**: accessible UI primitives
+- **Fuse.js**: fuzzy search across posts, projects, and CVEs
+- **Web Crypto**: AES-GCM encryption for active box writeups
 
 ## Development
 
