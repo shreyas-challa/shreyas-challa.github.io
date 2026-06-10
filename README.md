@@ -74,20 +74,40 @@ Pushing to `main` triggers `.github/workflows/deploy.yml`: GitHub Actions instal
 
 ```
 src/
-├── main.jsx          # Entry point
-├── App.jsx           # Routes + auth provider
-├── home.jsx          # Home page
-├── blog.jsx          # Single post view
-├── about.jsx         # About / portfolio page
-├── create.jsx        # Post editor (protected)
-├── login.jsx         # Auth page
-├── auth-context.jsx  # Auth state
-├── database.js       # Supabase client
-├── data/             # Static data (posts, portfolio projects, CVEs)
-├── components/ui/    # Shared UI components
-└── lib/              # Utilities
+├── main.jsx               # Entry point
+├── App.jsx                # Routes + auth provider
+├── home.jsx               # Feed, search, box grid
+├── blog.jsx               # Single post view + owner edit mode
+├── box.jsx                # Encrypted box writeup page
+├── box-view.jsx           # Locked / unlocked writeup views
+├── draft.jsx              # Local-only draft review page
+├── about.jsx              # Portfolio: projects + CVEs
+├── create.jsx             # Post editor (protected)
+├── login.jsx              # Auth page
+├── render-content.jsx     # Shared Tiptap JSON renderer (sanitized links)
+├── auth-context.jsx       # Auth state
+├── database.js            # Supabase client (null stub without env vars)
+├── theme-provider.jsx     # Light / dark theme
+├── data/
+│   ├── boxes.js           # Box registry: lock gate + mock fetch endpoint
+│   ├── boxes/             # Auto-generated encrypted writeups (one per box)
+│   ├── portfolio.js       # Projects + CVE disclosures for /about and search
+│   └── posts.js           # Legacy static posts (no longer imported)
+├── components/
+│   ├── writeup-editor.jsx # Shared Tiptap editor wrapper
+│   ├── kibo-ui/editor/    # Editor toolbar UI
+│   └── ui/                # Dock, cards, animations, theme toggler, etc.
+└── lib/
+    ├── crypto.js          # AES-GCM + PBKDF2 helpers (browser + Node)
+    └── utils.js           # cn() class helper
 
-public/images/        # Local image assets
+scripts/                   # Writeup import / encrypt / publish CLIs
+public/                    # Favicons, logo, 404 SPA shim, static images
+backend/                   # Unused Express stub, not part of the deployed site
 ```
 
-The About page renders portfolio content from `src/data/portfolio.js` — `projects`, `cves` (security disclosures with status badges), and supporting style maps.
+## Repo docs
+
+- `DESIGN_SYSTEM.md`: the site's visual language (monochrome zinc palette, tactile shadows, motion rules), written so it can be dropped into other projects as a design brief.
+- `supabase-storage-policies.sql`: storage bucket policies for image uploads. Note: it targets `post-content-images` and `post-covers`, while the app currently uploads to a `blog-images` bucket.
+- `.claude/commands/import-writeup.md`: the Claude Code command that runs the writeup pipeline end to end.
