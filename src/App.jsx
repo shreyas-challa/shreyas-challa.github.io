@@ -23,7 +23,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/blog/:id" element={<Blog />} />
+          <Route path="/blog/:slug" element={<Blog />} />
           <Route path="/box/:slug" element={<Box />} />
           {/* Local-only writeup review (no-ops in production build) */}
           {!import.meta.env.PROD && <Route path="/draft/:slug" element={<Draft />} />}

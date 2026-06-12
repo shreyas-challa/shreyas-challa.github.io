@@ -42,7 +42,7 @@ function parseDoc(content) {
 }
 
 export default function Blog() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [post, setPost] = useState(null);
@@ -59,16 +59,19 @@ export default function Blog() {
 
   useEffect(() => {
     if (!supabase) { setLoading(false); return; }
+    // URLs are slug-based (e.g. /blog/about-me); old numeric /blog/6 links still
+    // resolve by falling back to the id column when the param is all digits.
+    const column = /^\d+$/.test(slug) ? 'id' : 'slug';
     supabase
       .from('posts')
       .select('*')
-      .eq('id', id)
+      .eq(column, slug)
       .single()
       .then(({ data }) => {
         setPost(data);
         setLoading(false);
       });
-  }, [id]);
+  }, [slug]);
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links;
 

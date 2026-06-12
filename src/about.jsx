@@ -18,7 +18,7 @@ export default function About() {
 
         <h1 className="text-4xl font-bold">
           <EncryptedText text='Shreyas "' />
-          <Link to="/blog/6" className="underline" title="Read 'about me'">
+          <Link to="/blog/about-me" className="underline" title="Read 'about me'">
             <EncryptedText text="Noigel" />
           </Link>
           <EncryptedText text='" Challa' />

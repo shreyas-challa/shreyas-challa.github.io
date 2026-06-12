@@ -3,7 +3,7 @@
 // draft.jsx (the local preview), so what the user reviews matches production.
 
 import { useMemo } from "react";
-import { IconLock, IconLockOpen } from "@tabler/icons-react";
+import { IconLock } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { renderContent } from "./render-content";
 
@@ -41,10 +41,6 @@ export function UnlockedWriteup({ doc, box }) {
   return (
     <div className="flex flex-col justify-center items-center w-full">
       <div className="flex flex-col justify-center items-center w-full max-w-[800px] px-6 mt-12">
-        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 mb-6">
-          <IconLockOpen className="w-4 h-4" />
-          <span>Unlocked</span>
-        </div>
         {box?.cover && (
           <div className="flex flex-col items-center text-center mb-8">
             <img

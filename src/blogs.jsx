@@ -81,7 +81,7 @@ function Blogs({ posts, boxes = [], heading = "Other Blog Posts" }) {
         ))}
         {list.map((post, i) => (
           <RevealOnScroll key={post.id} delay={150 + (boxList.length + i)*75} duration={700} className="h-full">
-            <Link to={`/blog/${post.id}`} className="block cursor-pointer h-full">
+            <Link to={`/blog/${post.slug || post.id}`} className="block cursor-pointer h-full">
               <MinimalCard className="flex h-full flex-col">
                 <MinimalCardImage
                   src={post.image || '/images/welcome-blog.jpg'}
