@@ -1,5 +1,12 @@
 export const projects = [
   {
+    name: 'Xia',
+    description: 'Ahead-of-time compiled programming language with Pythonic indentation syntax and automatic reference counting instead of a garbage collector. The compiler is written in Rust and emits native binaries through LLVM 18, with a zero-cost C FFI.',
+    language: 'Rust',
+    url: 'https://github.com/shreyas-challa/xia',
+    tags: ['Compilers', 'Systems', 'Rust'],
+  },
+  {
     name: 'Lacuna',
     description: 'Autonomous pentesting agent with a real-time D3 attack graph. Multi-backend LLM orchestrates enumeration, exploitation, and privilege escalation to root with safety guardrails.',
     language: 'Python',
