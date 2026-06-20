@@ -22,7 +22,7 @@ export const projects = [
   },
   {
     name: 'SecGen-AI',
-    description: 'LLM-powered security research agent. Assists with vulnerability analysis, payload reasoning, and CVE triage using tool-use. Think of it as a research copilot rather than an autonomous attacker.',
+    description: 'LLM-powered security research agent. Assists with vulnerability analysis, payload reasoning, and CVE triage using tool-use. A research copilot, not an autonomous attacker.',
     language: 'Python',
     url: 'https://github.com/shreyas-challa/SecGen-ai',
     tags: ['AI', 'Security', 'Research'],
