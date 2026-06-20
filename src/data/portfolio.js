@@ -43,7 +43,7 @@ export const projects = [
   },
   {
     name: 'Malware Lab',
-    description: 'A research repository for learning and experimenting with malware development techniques in C.',
+    description: 'A research repository exploring offensive malware development techniques in C: process injection, shellcode loaders, API hooking, and evasion. Built for controlled lab study of how modern Windows implants operate.',
     language: 'C',
     url: 'https://github.com/shreyas-challa/malware',
     tags: ['Security', 'Low-Level', 'Research'],
