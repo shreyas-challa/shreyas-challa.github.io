@@ -5,7 +5,7 @@ import { links, createLink } from './links'
 import { PlaceholdersAndVanishInput } from './components/ui/placeholders-and-vanish-input'
 import { FloatingDock } from './components/ui/floating-dock'
 import { DotFlow } from './components/ui/gsap/dot-flow'
-import { BlurCard } from './blurcard'
+import { BlurCard, BoxHero } from './blurcard'
 import { MainHeading } from './mainheading'
 import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler"
 import { Blogs } from './blogs'
@@ -82,15 +82,18 @@ function Home() {
       .map((s) => s.key)
   ), [cveResults, projectResults, postResults])
 
-  // Boxes show as cards in the grid below, never the hero (the latest post owns
-  // that). Active boxes render encrypted; once retired they render as normal
-  // readable cards linking to the now-unlocked writeup.
+  // The newest ACTIVE (locked) box takes the hero slot as an encrypted teaser
+  // (BoxHero); the latest post then drops into the grid. With no active box the
+  // latest post owns the hero as before. Retired/unlocked boxes only ever grid.
   const gridBoxes = useMemo(() => listBoxes(), [])
 
   const isSearching = query.trim().length > 0
-  const latest = !isSearching ? posts[0] : null
-  // The latest post is the hero, so the rest drop into the grid below.
-  const cardPosts = !isSearching ? posts.slice(1) : posts
+  const heroBox = !isSearching ? gridBoxes.find((b) => b.locked) : null
+  const otherBoxes = heroBox ? gridBoxes.filter((b) => b.slug !== heroBox.slug) : gridBoxes
+  // When a box owns the hero, every post drops into the grid; otherwise the
+  // latest post is the hero and the rest grid below.
+  const latest = !isSearching && !heroBox ? posts[0] : null
+  const cardPosts = isSearching || heroBox ? posts : posts.slice(1)
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
 
@@ -121,7 +124,7 @@ function Home() {
         {!isSearching && !loading && (
           <div className='w-full'>
             <MainHeading />
-            <BlurCard post={latest} />
+            {heroBox ? <BoxHero box={heroBox} /> : <BlurCard post={latest} />}
           </div>
         )}
 
@@ -207,7 +210,7 @@ function Home() {
           })()}
 
           {!isSearching && !loading && (
-            <Blogs posts={cardPosts} boxes={gridBoxes} heading='Other Blog Posts' />
+            <Blogs posts={cardPosts} boxes={otherBoxes} heading='Other Blog Posts' />
           )}
         </div>
 
