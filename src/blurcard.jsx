@@ -31,13 +31,10 @@ export function BoxHero({ box }) {
           <IconLock className='w-4 h-4' /> Encrypted · active box
         </p>
         <div className='relative flex-1 overflow-hidden max-h-[120px] md:max-h-none'>
-          <div className='font-mono text-sm leading-relaxed text-muted-foreground/40 blur-[1.5px] select-none pr-8'>
+          <div className='font-mono text-sm leading-relaxed text-muted-foreground/60 select-none'>
             {lines.map((l, i) => <p key={i} className='break-all mb-2'>{l}</p>)}
           </div>
-          {/* Soft fades so the encrypted text dissolves at the edges instead of
-              being sliced by a hard border (bottom and the right line-wrap edge). */}
-          <div className='pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent' />
-          <div className='pointer-events-none absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-background via-background/70 to-transparent' />
+          <div className='pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent' />
         </div>
         <div className='mt-4 flex items-center justify-between'>
           <span className='text-xs text-muted-foreground'>Active · unlocks {unlockDate}</span>
