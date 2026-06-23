@@ -58,7 +58,7 @@ export function UnlockedWriteup({ doc, box }) {
   );
 }
 
-// Locked lock-screen: machine name, unlock date, root-hash form, decoy document.
+// Locked lock-screen: machine name, unlock date, secret-password form, decoy document.
 export function LockedWriteup({ box, hashInput, setHashInput, onUnlock, error, unlocking }) {
   const lockedDoc = useMemo(() => makeLockedDoc(), []);
   return (
@@ -80,7 +80,7 @@ export function LockedWriteup({ box, hashInput, setHashInput, onUnlock, error, u
           <p className="text-sm text-muted-foreground max-w-md">
             This box is active. The writeup is encrypted and unlocks on{" "}
             <span className="text-foreground font-medium">{formatDate(box.active_until)}</span>.
-            To read it now, enter the box's root hash.
+            To read it now, enter the secret password.
           </p>
         </div>
 
@@ -89,7 +89,7 @@ export function LockedWriteup({ box, hashInput, setHashInput, onUnlock, error, u
             type="text"
             value={hashInput}
             onChange={(e) => setHashInput(e.target.value)}
-            placeholder="Root hash"
+            placeholder="Secret password"
             autoComplete="off"
             spellCheck={false}
             className="flex-1 px-4 py-2 border rounded-lg bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"

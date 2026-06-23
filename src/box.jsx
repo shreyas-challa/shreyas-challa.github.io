@@ -47,7 +47,7 @@ export default function Box() {
       const plaintext = await decryptContent(box.encrypted, hashInput.trim());
       setDoc(plaintext);
     } catch {
-      setError("Incorrect root hash. The writeup stays locked until you provide the correct one.");
+      setError("Incorrect password. The writeup stays locked until you enter the correct secret.");
     } finally {
       setUnlocking(false);
     }

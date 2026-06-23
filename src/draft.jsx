@@ -120,7 +120,7 @@ function LockedPreview({ doc, meta }) {
     setEncrypted(null);
     setError(null);
     if (!meta.secret) {
-      setError("Set a root hash (secret) in the meta panel to preview the locked box.");
+      setError("Set a secret password in the meta panel to preview the locked box.");
       return;
     }
     encryptContent(JSON.stringify(doc), meta.secret).then((enc) => {
@@ -136,7 +136,7 @@ function LockedPreview({ doc, meta }) {
     try {
       setUnlockedDoc(await decryptContent(encrypted, hashInput.trim()));
     } catch {
-      setError("Incorrect root hash. The writeup stays locked until you provide the correct one.");
+      setError("Incorrect password. The writeup stays locked until you enter the correct secret.");
     } finally {
       setUnlocking(false);
     }
@@ -162,7 +162,7 @@ const META_FIELDS = [
   { key: "title", label: "Title", type: "text" },
   { key: "name", label: "Machine name", type: "text" },
   { key: "subtitle", label: "Subtitle", type: "text" },
-  { key: "secret", label: "Root hash (box secret)", type: "text" },
+  { key: "secret", label: "Secret password (box unlock secret)", type: "text" },
   { key: "active_until", label: "Unlocks on (box)", type: "text" },
   { key: "cover", label: "Cover image URL", type: "text" },
 ];
