@@ -328,7 +328,10 @@ export default function Draft() {
   const modes = ["rendered", "edit", ...(isBox ? ["locked"] : []), "meta"];
 
   return (
-    <div className="min-h-screen bg-background">
+    // Dev-only review page: scope `dark` to this subtree so the preview matches
+    // the published look regardless of the global/system theme. Scoping it here
+    // (rather than on <html>) avoids the ThemeProvider effect resetting it.
+    <div className="dark min-h-screen bg-background text-foreground">
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
         <div className="max-w-[860px] mx-auto px-6 min-h-14 py-2 flex flex-wrap items-center justify-between gap-3">
