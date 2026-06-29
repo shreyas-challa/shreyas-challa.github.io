@@ -23,8 +23,6 @@ The site serves three kinds of content: blog posts backed by Supabase, a portfol
 | `/`            | `home.jsx`   | Post feed, encrypted box cards, fuzzy search      |
 | `/about`       | `about.jsx`  | Portfolio: projects + CVE disclosures             |
 | `/blog/:id`    | `blog.jsx`   | Single post view with owner-only inline edit mode |
-| `/box/:slug`   | `box.jsx`    | Box writeup, locked while the box is active       |
-| `/draft/:slug` | `draft.jsx`  | Draft review page, dev server only (never built)  |
 | `/login`       | `login.jsx`  | Supabase auth                                     |
 | `/create`      | `create.jsx` | Tiptap post editor (protected)                    |
 
