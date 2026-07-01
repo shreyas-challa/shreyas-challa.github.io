@@ -55,14 +55,6 @@ npm install
 npm run dev
 ```
 
-Supabase-backed features (the live feed, auth, publishing) need a `.env` file (gitignored):
-
-```
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
-```
-
-Without these the Supabase client is a null stub and the rest of the site still runs. Other scripts: `npm run lint` (ESLint), `npm run build`, `npm run preview`.
 
 ## Deploy
 
