@@ -82,7 +82,7 @@ export function BlurCard({ post }) {
       <div className='rounded-2xl w-full md:w-[600px] h-auto md:h-[500px] flex flex-col p-4 md:p-8'>
         {/* Subtitle is intentionally left out here: it already shows over the
             cover image on the right, and a second copy made the spacing odd. */}
-        <h2 className='hidden md:block text-3xl font-bold mb-4'>{post.title}</h2>
+        <h2 className='hidden md:block text-3xl font-bold mb-2'>{post.title}</h2>
         <div className='relative flex-1 overflow-hidden max-h-[120px] md:max-h-none'>
           <div className='hidden md:block'>{renderContent(post.content, { limit: 3 })}</div>
           <div className='md:hidden'>{renderContent(post.content, { limit: 1 })}</div>
