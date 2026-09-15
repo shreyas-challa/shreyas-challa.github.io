@@ -4,7 +4,7 @@
 //   node scripts/encrypt-playbook.mjs <plaintext.json> <passphrase>
 //
 // <plaintext.json>  scripts/playbook-plaintext.json (built by
-//                   build-playbook-json.py) — never committed, never shipped.
+//                   build-playbook-json.py) - never committed, never shipped.
 // <passphrase>      The shared passphrase teammates enter on /playbook to
 //                    decrypt it client-side. Not stored anywhere; only the
 //                    ciphertext is committed.

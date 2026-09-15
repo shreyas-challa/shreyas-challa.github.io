@@ -139,6 +139,18 @@ def parse_services_sheet(ws):
     return machines
 
 
+def strip_em_dashes(obj):
+    """The site's style rule bans em dashes everywhere, including quoted
+    spreadsheet text. Recursively swap '—' for a plain hyphen."""
+    if isinstance(obj, str):
+        return obj.replace("—", "-")
+    if isinstance(obj, list):
+        return [strip_em_dashes(v) for v in obj]
+    if isinstance(obj, dict):
+        return {k: strip_em_dashes(v) for k, v in obj.items()}
+    return obj
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python scripts/build-playbook-json.py <path to xlsx>")
@@ -150,7 +162,7 @@ def main():
 
     playbook = {
         "meta": {
-            "name": "Space RVB — Red Team Playbook",
+            "name": "Space RVB - Red Team Playbook",
             "scoredChecksTotal": 22,
             "timeline": timeline,
             "whatChangedFromLastYear": changed,
@@ -161,6 +173,7 @@ def main():
         "machines": machines,
         "sections": sections,
     }
+    playbook = strip_em_dashes(playbook)
 
     out_path = "scripts/playbook-plaintext.json"
     with open(out_path, "w", encoding="utf-8") as f:

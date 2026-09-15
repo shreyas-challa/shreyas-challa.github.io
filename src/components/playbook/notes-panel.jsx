@@ -18,28 +18,28 @@ function NoteList({ title, items }) {
   )
 }
 
-// Collapsed-by-default panel for the sheet's non-command reference material —
+// Collapsed-by-default panel for the sheet's non-command reference material -
 // the run-of-show timeline and the "read this before you touch anything"
 // corrections/traps notes. Kept out of the way of fast command lookup.
 export function NotesPanel({ meta }) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="rounded-2xl border border-border bg-card">
+    <div className="rounded-2xl bg-muted/40">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
       >
         <span className="flex items-center gap-2 font-semibold">
-          <IconNotes className="w-4 h-4" />
+          <IconNotes className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           Competition notes &amp; timeline
         </span>
         <IconChevronDown className={cn('w-5 h-5 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </button>
 
       {open && (
-        <div className="px-5 pb-5 grid gap-6 border-t border-border pt-5">
+        <div className="px-5 pb-5 grid gap-6 border-t border-border/60 pt-5">
           <NoteList title="Run-of-show timeline" items={meta.timeline} />
           <NoteList title="What changed from last year" items={meta.whatChangedFromLastYear} />
           <NoteList title="Bugs fixed from last year's sheet" items={meta.bugsFixedFromLastYear} />

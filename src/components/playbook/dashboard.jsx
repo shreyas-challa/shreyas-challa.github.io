@@ -55,14 +55,16 @@ export function PlaybookDashboard({ data, onLock }) {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">{data.meta.name}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {data.meta.scoredChecksTotal} scored checks · {data.sections.length} services · {machineOptions.length} machines · IPs use{' '}
+            <span className="text-lime-600 dark:text-lime-400 font-semibold">{data.meta.scoredChecksTotal}</span> scored checks ·{' '}
+            <span className="text-lime-600 dark:text-lime-400 font-semibold">{data.sections.length}</span> services ·{' '}
+            <span className="text-lime-600 dark:text-lime-400 font-semibold">{machineOptions.length}</span> machines · IPs use{' '}
             <code className="font-mono">{'{N}'}</code> = your team number
           </p>
         </div>
         <button
           type="button"
           onClick={onLock}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-full px-3 py-1.5 transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded-full px-3 py-1.5 transition-colors shrink-0"
         >
           <IconLock className="w-3.5 h-3.5" /> Lock
         </button>
@@ -77,9 +79,8 @@ export function PlaybookDashboard({ data, onLock }) {
           spellCheck={false}
           autoComplete="off"
           className={cn(
-            'w-full h-11 pl-11 pr-10 rounded-full bg-background dark:bg-zinc-800 border border-border text-sm',
-            'shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]',
-            'focus:outline-none focus:ring-2 focus:ring-ring',
+            'w-full h-11 pl-11 pr-10 rounded-full bg-muted/50 dark:bg-white/[0.04] text-sm',
+            'focus:outline-none focus:ring-2 focus:ring-lime-500/40',
           )}
         />
         {query && (
@@ -93,28 +94,36 @@ export function PlaybookDashboard({ data, onLock }) {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mb-3">
+      <div className="flex flex-wrap items-center gap-1.5 mb-3">
         {LEVELS.map((l) => (
           <Button
             key={l}
             type="button"
             size="sm"
-            variant={level === l ? 'default' : 'outline'}
+            variant="ghost"
             onClick={() => setLevel(l)}
-            className="rounded-full"
+            className={cn(
+              'rounded-full',
+              level === l
+                ? 'bg-lime-500/15 text-lime-700 dark:text-lime-400 font-semibold hover:bg-lime-500/20'
+                : 'text-muted-foreground',
+            )}
           >
             {l === 'all' ? 'All levels' : l}
           </Button>
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 mb-8">
+      <div className="flex flex-wrap items-center gap-1.5 mb-8">
         <Button
           type="button"
           size="sm"
-          variant={machine === 'all' ? 'secondary' : 'ghost'}
+          variant="ghost"
           onClick={() => setMachine('all')}
-          className="rounded-full"
+          className={cn(
+            'rounded-full',
+            machine === 'all' ? 'bg-sky-500/15 text-sky-700 dark:text-sky-400 font-semibold hover:bg-sky-500/20' : 'text-muted-foreground',
+          )}
         >
           All machines
         </Button>
@@ -123,9 +132,12 @@ export function PlaybookDashboard({ data, onLock }) {
             key={m}
             type="button"
             size="sm"
-            variant={machine === m ? 'secondary' : 'ghost'}
+            variant="ghost"
             onClick={() => setMachine(m)}
-            className="rounded-full"
+            className={cn(
+              'rounded-full',
+              machine === m ? 'bg-sky-500/15 text-sky-700 dark:text-sky-400 font-semibold hover:bg-sky-500/20' : 'text-muted-foreground',
+            )}
           >
             {m}
           </Button>

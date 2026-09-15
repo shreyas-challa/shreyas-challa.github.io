@@ -10,7 +10,7 @@ import { decryptContent } from './lib/crypto'
 import { PlaybookDashboard } from './components/playbook/dashboard'
 import encrypted from './data/playbook-encrypted.json'
 
-// Sessionstorage only — clears when the tab/browser closes, never persists
+// Sessionstorage only - clears when the tab/browser closes, never persists
 // across devices or days. Plaintext never touches localStorage or the network.
 const CACHE_KEY = 'playbook:plaintext'
 
@@ -58,8 +58,8 @@ export default function Playbook() {
     return (
       <div className="flex flex-col items-center w-full px-4 min-h-screen">
         <div className="flex flex-col items-center text-center gap-3 pt-24 pb-10 w-full max-w-sm">
-          <div className="w-14 h-14 rounded-full border border-border flex items-center justify-center">
-            <IconShieldLock className="w-6 h-6 text-muted-foreground" />
+          <div className="w-14 h-14 rounded-full bg-lime-500/10 flex items-center justify-center">
+            <IconShieldLock className="w-6 h-6 text-lime-600 dark:text-lime-400" />
           </div>
           <h1 className="text-2xl font-bold">Playbook</h1>
           <p className="text-sm text-muted-foreground">
@@ -75,10 +75,14 @@ export default function Playbook() {
               autoComplete="off"
               autoFocus
               spellCheck={false}
-              className="w-full px-4 py-2 border rounded-lg bg-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-4 py-2 rounded-lg bg-muted/50 dark:bg-white/[0.04] font-mono text-sm focus:outline-none focus:ring-2 focus:ring-lime-500/40"
               required
             />
-            <Button type="submit" disabled={unlocking}>
+            <Button
+              type="submit"
+              disabled={unlocking}
+              className="bg-lime-500 text-lime-950 hover:bg-lime-400 dark:bg-lime-500 dark:text-lime-950 dark:hover:bg-lime-400"
+            >
               {unlocking ? 'Unlocking...' : 'Unlock'}
             </Button>
           </form>
