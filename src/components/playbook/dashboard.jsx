@@ -4,7 +4,6 @@ import { IconSearch, IconX, IconLock } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { SectionCard } from './section-card'
-import { NotesPanel } from './notes-panel'
 
 const LEVELS = ['all', 'L1', 'L2', 'L3', 'L4', 'L5']
 
@@ -142,10 +141,6 @@ export function PlaybookDashboard({ data, onLock }) {
             {m}
           </Button>
         ))}
-      </div>
-
-      <div className="mb-8">
-        <NotesPanel meta={data.meta} />
       </div>
 
       <div className="grid gap-5">
