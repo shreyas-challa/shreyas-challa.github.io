@@ -53,12 +53,6 @@ export function PlaybookDashboard({ data, onLock }) {
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">{data.meta.name}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            <span className="text-lime-600 dark:text-lime-400 font-semibold">{data.meta.scoredChecksTotal}</span> scored checks ·{' '}
-            <span className="text-lime-600 dark:text-lime-400 font-semibold">{data.sections.length}</span> services ·{' '}
-            <span className="text-lime-600 dark:text-lime-400 font-semibold">{machineOptions.length}</span> machines · IPs use{' '}
-            <code className="font-mono">{'{N}'}</code> = your team number
-          </p>
         </div>
         <button
           type="button"
