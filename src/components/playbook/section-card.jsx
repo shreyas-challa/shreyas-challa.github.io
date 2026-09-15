@@ -20,6 +20,16 @@ function machineMeta(os) {
   return { Icon: IconTerminal2, classes: 'bg-lime-500/10 text-lime-700 dark:text-lime-400' }
 }
 
+// Badge fill deepens with level so L5 reads as visibly "further" than L1
+// without introducing a second hue.
+const LEVEL_BADGE = {
+  L1: 'bg-lime-500/10 text-lime-700 dark:text-lime-400',
+  L2: 'bg-lime-500/15 text-lime-700 dark:text-lime-400',
+  L3: 'bg-lime-500/20 text-lime-800 dark:text-lime-300',
+  L4: 'bg-lime-500/30 text-lime-800 dark:text-lime-200',
+  L5: 'bg-lime-500/40 text-lime-900 dark:text-lime-100',
+}
+
 function LevelDots({ level }) {
   const n = Number(level.replace('L', ''))
   return (
@@ -37,12 +47,14 @@ function LevelDots({ level }) {
   )
 }
 
-function LevelRow({ lvl }) {
+function LevelRow({ lvl, isFirst }) {
+  const seam = !isFirst && 'border-t-2 border-lime-500/20 dark:border-lime-500/25 pt-5'
+
   if (lvl.disabled) {
     return (
-      <div className="py-4 pl-4 border-l-2 border-dashed border-destructive/40 opacity-70">
+      <div className={cn('py-4 pl-4 border-l-2 border-dashed border-destructive/40 opacity-70', seam)}>
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+          <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', LEVEL_BADGE[lvl.level])}>
             {lvl.level}
           </span>
           <LevelDots level={lvl.level} />
@@ -56,9 +68,9 @@ function LevelRow({ lvl }) {
   }
 
   return (
-    <div className="py-4">
+    <div className={cn('py-4', seam)}>
       <div className="flex flex-wrap items-center gap-2 mb-3">
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+        <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', LEVEL_BADGE[lvl.level])}>
           {lvl.level}
         </span>
         <LevelDots level={lvl.level} />
@@ -97,9 +109,9 @@ function LevelRow({ lvl }) {
 
 // One scored-check service block: header (checks, targets, machines,
 // description, optional warning) plus its L1-L5 escalation ladder, filtered
-// down to `activeLevel` when the level filter isn't "all". Level rows share a
-// divider instead of each getting its own bordered box, so a page of fifteen
-// services doesn't read as a wall of nested cards.
+// down to `activeLevel` when the level filter isn't "all". Levels are
+// separated by a lime seam (not a bordered box each) so the break between
+// them stays legible even though each level also has its own command block.
 export function SectionCard({ section, activeLevel, machines }) {
   const [open, setOpen] = useState(true)
   const levels = activeLevel === 'all' ? section.levels : section.levels.filter((l) => l.level === activeLevel)
@@ -155,9 +167,9 @@ export function SectionCard({ section, activeLevel, machines }) {
       </button>
 
       {open && (
-        <div className="divide-y divide-border/60 mt-1">
-          {levels.map((lvl) => (
-            <LevelRow key={lvl.level} lvl={lvl} />
+        <div className="flex flex-col mt-1">
+          {levels.map((lvl, i) => (
+            <LevelRow key={lvl.level} lvl={lvl} isFirst={i === 0} />
           ))}
           {levels.length === 0 && (
             <p className="text-sm text-muted-foreground py-4">No level matches the current filter.</p>
