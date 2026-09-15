@@ -9,6 +9,12 @@ drafts/
 # Local box logos/banners (kept out of git; embedded into drafts/uploaded to Supabase)
 local-assets/
 
+# Competition source spreadsheet and its decrypted intermediate JSON — never
+# commit plaintext. Only the AES-GCM ciphertext in src/data/*-encrypted.json
+# is checked in; see scripts/encrypt-playbook.mjs.
+*.xlsx
+scripts/playbook-plaintext.json
+
 .env
 .env.local
 .env.*.local
