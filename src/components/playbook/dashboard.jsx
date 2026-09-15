@@ -49,7 +49,7 @@ export function PlaybookDashboard({ data, onLock }) {
   }, [query, fuse, data.sections, machine])
 
   return (
-    <div className="w-full max-w-4xl px-4 sm:px-6 pt-10 pb-32">
+    <div className="w-full min-w-0 max-w-4xl px-4 sm:px-6 pt-10 pb-32">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">{data.meta.name}</h1>

@@ -52,7 +52,7 @@ function LevelRow({ lvl, isFirst }) {
 
   if (lvl.disabled) {
     return (
-      <div className={cn('py-4 pl-4 border-l-2 border-dashed border-destructive/40 opacity-70', seam)}>
+      <div className={cn('py-4 pl-4 min-w-0 border-l-2 border-dashed border-destructive/40 opacity-70', seam)}>
         <div className="flex items-center gap-2 mb-1.5">
           <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', LEVEL_BADGE[lvl.level])}>
             {lvl.level}
@@ -68,7 +68,7 @@ function LevelRow({ lvl, isFirst }) {
   }
 
   return (
-    <div className={cn('py-4', seam)}>
+    <div className={cn('py-4 min-w-0', seam)}>
       <div className="flex flex-wrap items-center gap-2 mb-3">
         <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', LEVEL_BADGE[lvl.level])}>
           {lvl.level}
@@ -77,8 +77,8 @@ function LevelRow({ lvl, isFirst }) {
         <span className="text-sm font-medium">{lvl.action}</span>
       </div>
 
-      <div className="grid gap-3">
-        <div>
+      <div className="grid gap-3 min-w-0">
+        <div className="min-w-0">
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5">
             Command
           </div>
@@ -86,7 +86,7 @@ function LevelRow({ lvl, isFirst }) {
         </div>
 
         {lvl.why && (
-          <div>
+          <div className="min-w-0">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5">
               Why the check goes red
             </div>
@@ -95,7 +95,7 @@ function LevelRow({ lvl, isFirst }) {
         )}
 
         {lvl.revert && (
-          <div>
+          <div className="min-w-0">
             <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold mb-1.5">
               Revert
             </div>
@@ -117,7 +117,7 @@ export function SectionCard({ section, activeLevel, machines }) {
   const levels = activeLevel === 'all' ? section.levels : section.levels.filter((l) => l.level === activeLevel)
 
   return (
-    <div className="rounded-2xl bg-card p-5 sm:p-6 shadow-sm dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_2px_8px_0_rgba(0,0,0,0.2)]">
+    <div className="min-w-0 rounded-2xl bg-card p-5 sm:p-6 shadow-sm dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_2px_8px_0_rgba(0,0,0,0.2)]">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
