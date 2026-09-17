@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { links, createLink } from './links'
 import { useAuth } from './auth-context'
 import { ChaseGame } from './components/challenges/chase-game'
-import { isKnownUsername, resolveUsername } from './data/challenge-users'
+import { CHALLENGE_USERNAMES, isKnownUsername, resolveUsername } from './data/challenge-users'
 
 // team-1 .. team-8. Bump TEAM_COUNT if the roster changes; the selector and the
 // validation both read from this list.
@@ -21,6 +21,11 @@ const TEAM_COUNT = 8
 const TEAMS = Array.from({ length: TEAM_COUNT }, (_, i) => `team-${i + 1}`)
 
 const CHECK_MS = 1900
+
+// Shown as the username placeholder so players see the shape of a callsign
+// rather than the word "username". Pulled from the roster so it stays a real
+// example if the list is edited.
+const EXAMPLE_USERNAME = CHALLENGE_USERNAMES[0]
 
 // Returns { ok: true } to reveal the game, or { ok: false, message } to bounce
 // back to the form with that message under it. Runs during the progress ring.
@@ -186,7 +191,7 @@ export default function Challenges() {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                Sign in with your username and password to continue.
+                Sign in with the credentials issued for the team game.
               </p>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-4 text-left">
@@ -218,14 +223,14 @@ export default function Challenges() {
 
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="challenges-username" className="text-xs font-medium text-muted-foreground">
-                    Username
+                    Callsign
                   </label>
                   <input
                     id="challenges-username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="username"
+                    placeholder={EXAMPLE_USERNAME}
                     autoComplete="username"
                     autoCapitalize="none"
                     autoFocus
@@ -233,6 +238,9 @@ export default function Challenges() {
                     className={inputClass}
                     required
                   />
+                  <p className="text-xs text-muted-foreground/70">
+                    Your assigned callsign, for example {EXAMPLE_USERNAME}
+                  </p>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
@@ -245,7 +253,7 @@ export default function Challenges() {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="password"
+                      placeholder="team password"
                       autoComplete="current-password"
                       spellCheck={false}
                       className={inputClass + ' pr-11'}
