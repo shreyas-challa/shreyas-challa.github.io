@@ -2,18 +2,24 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { IconCheck, IconRefresh } from '@tabler/icons-react'
 
 const ROUND_MS = 60000
-const RADIUS = 26
+
+// Difficulty knobs. Everything that makes this harder or gentler is here.
+const RADIUS = 46
 
 // The circle drifts at BASE_SPEED and ramps toward MAX_SPEED as the clock runs
-// down, so the last fifteen seconds are the hard ones. Speeds are px/second.
-const BASE_SPEED = 170
-const MAX_SPEED = 430
+// down, so the last stretch is the hard one. Speeds are px/second.
+const BASE_SPEED = 105
+const MAX_SPEED = 255
+
+// Speed eases up from a standstill over this long after the cursor lands, so
+// the circle never yanks itself out from under you the instant you touch it.
+const RAMP_IN_MS = 900
 
 // A fresh heading is picked on this cadence and eased into, which keeps the
 // motion unpredictable without the teleport-feel of instant direction flips.
-const TURN_MIN_MS = 600
-const TURN_MAX_MS = 1500
-const TURN_EASING = 3.5
+const TURN_MIN_MS = 1400
+const TURN_MAX_MS = 2800
+const TURN_EASING = 1.8
 
 function formatClock(ms) {
   const clamped = Math.max(0, ms)
@@ -156,7 +162,8 @@ export function ChaseGame({ username, team }) {
       hy /= len
 
       const progress = 1 - remainingRef.current / ROUND_MS
-      const speed = BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress
+      const rampIn = Math.min((progress * ROUND_MS) / RAMP_IN_MS, 1)
+      const speed = (BASE_SPEED + (MAX_SPEED - BASE_SPEED) * progress) * rampIn
 
       let nx = posRef.current.x + hx * speed * dt
       let ny = posRef.current.y + hy * speed * dt
