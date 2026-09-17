@@ -9,20 +9,27 @@ import {
 import { FloatingDock } from './components/ui/floating-dock'
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { links, createLink } from './links'
 import { useAuth } from './auth-context'
+
+// team-1 .. team-8. Bump TEAM_COUNT if the roster changes; the selector and the
+// validation both read from this list.
+const TEAM_COUNT = 8
+const TEAMS = Array.from({ length: TEAM_COUNT }, (_, i) => `team-${i + 1}`)
 
 // Integration point for the challenges feature. Swap the body for a real check
 // (Supabase call, signed token, whatever the backend ends up being) and return
 // { ok: true } on success or { ok: false, message } to surface an error in the
 // form. Credentials are never compared in the browser: anything shipped to the
 // client can be read by whoever holds the bundle.
-async function authenticate(username, password) { // eslint-disable-line no-unused-vars
+async function authenticate({ username, password, team }) { // eslint-disable-line no-unused-vars
   return { ok: false, message: 'Sign-in is not wired up yet.' }
 }
 
 export default function Challenges() {
   const { user } = useAuth()
+  const [team, setTeam] = useState(null)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -30,7 +37,7 @@ export default function Challenges() {
   const [submitting, setSubmitting] = useState(false)
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
-  const canSubmit = username.trim() !== '' && password !== '' && !submitting
+  const canSubmit = team !== null && username.trim() !== '' && password !== '' && !submitting
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -38,7 +45,7 @@ export default function Challenges() {
     setError(null)
     setSubmitting(true)
     try {
-      const result = await authenticate(username.trim(), password)
+      const result = await authenticate({ username: username.trim(), password, team })
       if (!result?.ok) {
         setError(result?.message ?? 'Incorrect username or password.')
         setPassword('')
@@ -75,6 +82,32 @@ export default function Challenges() {
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-4 text-left">
+            <fieldset className="flex flex-col gap-1.5">
+              <legend className="text-xs font-medium text-muted-foreground mb-1.5">Team</legend>
+              <div className="grid grid-cols-4 gap-2">
+                {TEAMS.map((id, i) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setTeam(id)}
+                    aria-pressed={team === id}
+                    className={cn(
+                      'h-9 rounded-full text-sm font-medium transition-all duration-200',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500/40',
+                      team === id
+                        ? 'bg-lime-500 text-lime-950 hover:bg-lime-400'
+                        : 'bg-muted/50 dark:bg-white/[0.04] text-muted-foreground hover:bg-accent hover:text-foreground',
+                    )}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                {team ? `Signing in as ${team}` : `Pick your team, 1 to ${TEAM_COUNT}`}
+              </p>
+            </fieldset>
+
             <div className="flex flex-col gap-1.5">
               <label htmlFor="challenges-username" className="text-xs font-medium text-muted-foreground">
                 Username
