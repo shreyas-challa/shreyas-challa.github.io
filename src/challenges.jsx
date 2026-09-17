@@ -197,7 +197,7 @@ export default function Challenges() {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                Sign in with the credentials issued for the team game.
+                Sign in with the credentials of your RvB team assigned user.
               </p>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-4 text-left">
@@ -245,7 +245,7 @@ export default function Challenges() {
                     required
                   />
                   <p className="text-xs text-muted-foreground/70">
-                    Your assigned callsign, for example {EXAMPLE_USERNAME}
+                    Your assigned user, Ex: {EXAMPLE_USERNAME}
                   </p>
                 </div>
 
@@ -259,7 +259,7 @@ export default function Challenges() {
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="team password"
+                      placeholder="password"
                       autoComplete="current-password"
                       spellCheck={false}
                       className={inputClass + ' pr-11'}
