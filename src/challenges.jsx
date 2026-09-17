@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  IconAlertTriangle,
   IconEye,
   IconEyeOff,
   IconShieldLock,
@@ -20,9 +21,19 @@ const TEAMS = Array.from({ length: TEAM_COUNT }, (_, i) => `team-${i + 1}`)
 
 const CHECK_MS = 1900
 
-// The gate between the form and the game. Nothing is verified here yet: when a
-// real check lands, run it alongside this and hold the ring until it answers.
-function CheckingScreen({ onDone }) {
+// Integration point for the challenges feature. Receives everything the form
+// collected, and returns { ok: true } to reveal the game or { ok: false,
+// message } to bounce back to the form with that message under it. Swap the
+// body for the real check when the backend is ready: a comparison done here in
+// the browser is readable by anyone holding the bundle.
+async function authenticate({ username, password, team }) { // eslint-disable-line no-unused-vars
+  return { ok: true }
+}
+
+// The gate between the form and the game. Runs the check behind the progress
+// ring and holds the result until the ring finishes, so a fast (or instant)
+// check still reads as a check rather than a flicker.
+function CheckingScreen({ run, onResult }) {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
@@ -38,12 +49,26 @@ function CheckingScreen({ onDone }) {
       }
     }
     frame = requestAnimationFrame(tick)
-    const done = setTimeout(onDone, CHECK_MS + 350)
+
+    let cancelled = false
+    let timer = 0
+    const minimumWait = new Promise((resolve) => {
+      timer = setTimeout(resolve, CHECK_MS + 350)
+    })
+    Promise.all([Promise.resolve().then(run), minimumWait])
+      .then(([result]) => {
+        if (!cancelled) onResult(result)
+      })
+      .catch(() => {
+        if (!cancelled) onResult({ ok: false, message: 'Something went wrong. Try again.' })
+      })
+
     return () => {
+      cancelled = true
       if (frame) cancelAnimationFrame(frame)
-      clearTimeout(done)
+      clearTimeout(timer)
     }
-  }, [onDone])
+  }, [run, onResult])
 
   const radius = 30
   const circumference = 2 * Math.PI * radius
@@ -92,17 +117,30 @@ export default function Challenges() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState(null)
 
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
   const canSubmit = team !== null && username.trim() !== '' && password !== ''
 
-  const handleCheckDone = useCallback(() => setStage('game'), [])
+  // Stable identities: the auth context resolving mid-check must not restart
+  // the ring or fire the check a second time.
+  const runCheck = useCallback(() => authenticate(session), [session])
+  const handleResult = useCallback((result) => {
+    if (result?.ok) {
+      setStage('game')
+    } else {
+      setError(result?.message ?? 'Incorrect username or password.')
+      setStage('form')
+    }
+  }, [])
 
   function handleSubmit(e) {
     e.preventDefault()
     if (!canSubmit) return
-    setSession({ username: username.trim(), team })
-    setPassword('')
+    setError(null)
+    // The password stays on the session so the real check has something to
+    // send once it is wired up.
+    setSession({ username: username.trim(), password, team })
     setStage('checking')
   }
 
@@ -132,7 +170,7 @@ export default function Challenges() {
           <h1 className="text-2xl font-bold tracking-tight">Challenges</h1>
 
           {stage === 'checking' ? (
-            <CheckingScreen onDone={handleCheckDone} />
+            <CheckingScreen run={runCheck} onResult={handleResult} />
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
@@ -154,7 +192,7 @@ export default function Challenges() {
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500/40',
                           team === id
                             ? 'bg-lime-500 text-lime-950 hover:bg-lime-400'
-                            : 'bg-muted/50 dark:bg-white/[0.04] text-muted-foreground hover:bg-accent hover:text-foreground',
+                            : 'bg-muted/50 dark:bg-white/4 text-muted-foreground hover:bg-accent hover:text-foreground',
                         )}
                       >
                         {i + 1}
@@ -221,6 +259,13 @@ export default function Challenges() {
                   Sign in
                 </Button>
               </form>
+
+              {error && (
+                <p className="flex items-center gap-1.5 text-sm text-red-500 mt-1" role="alert">
+                  <IconAlertTriangle className="w-4 h-4 shrink-0" />
+                  {error}
+                </p>
+              )}
             </>
           )}
         </div>
