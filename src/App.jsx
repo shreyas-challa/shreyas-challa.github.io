@@ -10,6 +10,7 @@ import Draft from './draft.jsx'
 import Playbook from './playbook.jsx'
 import Challenges from './challenges.jsx'
 import Bunker from './bunker.jsx'
+import BunkerSubmit from './bunker-submit.jsx'
 import { AuthProvider, useAuth } from './auth-context';
 
 function ProtectedRoute({ children }) {
@@ -31,6 +32,7 @@ function App() {
           <Route path="/playbook" element={<Playbook />} />
           <Route path="/challenges" element={<Challenges />} />
           <Route path="/bunker" element={<Bunker />} />
+          <Route path="/bunker/submit" element={<BunkerSubmit />} />
           {/* Local-only writeup review (no-ops in production build) */}
           {!import.meta.env.PROD && <Route path="/draft/:slug" element={<Draft />} />}
           <Route path="/login" element={<Login />} />

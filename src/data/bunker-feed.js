@@ -1,111 +1,97 @@
-// The data source behind the /bunker table.
-//
-// Nothing here is wired to a real service yet. Point VITE_BUNKER_FEED_URL at
-// the endpoint once it exists and the table starts filling in on its own; no
-// change to the page is needed. Two transports are supported:
-//
-//   poll   (default) — GET the URL on an interval, read the three values off
-//                      the JSON body.
-//   stream           — hold a Server-Sent Events connection open and take each
-//                      message as it lands. Use this when the endpoint pushes.
-//
-// Pick one with VITE_BUNKER_FEED_MODE=poll | stream.
-export const BUNKER_FEED_URL = import.meta.env.VITE_BUNKER_FEED_URL ?? ''
-export const BUNKER_FEED_MODE = import.meta.env.VITE_BUNKER_FEED_MODE ?? 'poll'
+import { supabase } from '../database'
 
-const POLL_MS = 2000
+// The data behind /bunker.
+//
+// Entries live in a Supabase table and arrive over Realtime, so a submission
+// made on /bunker/submit shows up on every open /bunker within a second or so
+// without anyone refreshing. The site is static on GitHub Pages, so there is
+// no server of ours in the path; the browser talks to Supabase directly.
+//
+// Run bunker-table.sql in the Supabase SQL editor once to create the table,
+// open it to the anon key, and add it to the realtime publication.
+export const BUNKER_TABLE = 'bunker_entries'
 
-// The three variables the table shows, in display order. `key` is what the
-// endpoint is expected to call them; rename these to match the real payload
-// rather than translating in the page.
-export const BUNKER_FIELDS = [
-  { key: 'alpha', label: 'Alpha' },
-  { key: 'bravo', label: 'Bravo' },
-  { key: 'charlie', label: 'Charlie' },
+// The three values an entry carries. `key` is the column name, `label` is the
+// column heading. Rename both here to whatever the values actually are; the
+// table, the form, and the insert all read from this list.
+export const BUNKER_COLUMNS = [
+  { key: 'value_1', label: 'Value 1' },
+  { key: 'value_2', label: 'Value 2' },
+  { key: 'value_3', label: 'Value 3' },
 ]
 
-// Accepts the shapes a small JSON endpoint is likely to return and flattens
-// them to { key: value }. Anything unrecognised comes back empty, which the
-// page reads as "still waiting" rather than an error.
-function normalize(payload) {
-  if (!payload || typeof payload !== 'object') return {}
+// How far back the table loads on open. Newer entries stream in on top of
+// these; the list is trimmed to the same length as it grows.
+export const HISTORY_LIMIT = 50
 
-  // [{ key, value }, ...]
-  if (Array.isArray(payload)) {
-    return Object.fromEntries(
-      payload
-        .filter((row) => row && row.key != null)
-        .map((row) => [String(row.key), row.value]),
-    )
-  }
+const SELECT_COLUMNS = ['id', 'created_at', ...BUNKER_COLUMNS.map((c) => c.key)].join(', ')
 
-  // { values: {...} } / { data: {...} } / { alpha: ..., bravo: ... }
-  const body = payload.values ?? payload.data ?? payload
-  if (!body || typeof body !== 'object') return {}
+// True when the client has credentials. Without them the page still renders,
+// it just sits on its empty row instead of erroring.
+export const bunkerFeedConfigured = supabase !== null
 
-  const out = {}
-  for (const { key } of BUNKER_FIELDS) {
-    if (key in body) out[key] = body[key]
-  }
-  return out
+// Most recent entries first.
+export async function fetchBunkerEntries() {
+  if (!supabase) return []
+
+  const { data, error } = await supabase
+    .from(BUNKER_TABLE)
+    .select(SELECT_COLUMNS)
+    .order('created_at', { ascending: false })
+    .limit(HISTORY_LIMIT)
+
+  if (error) throw error
+  return data ?? []
 }
 
-// Starts the feed. `onValues(values)` fires with a partial { key: value } map
-// every time a payload arrives — the page timestamps each key at that moment,
-// so a field that arrives late is stamped late. `onStatus(status)` reports
-// 'idle' | 'connecting' | 'live' | 'error'.
+// Opens the live connection. `onInsert(entry)` fires once per row the moment
+// Supabase pushes it. `onStatus(status)` reports 'idle' | 'connecting' |
+// 'live' | 'error'.
 //
-// Returns a stop function. Safe to call with no URL configured: it settles on
-// 'idle' and never touches the network.
-export function subscribeToBunkerFeed({ onValues, onStatus }) {
-  if (!BUNKER_FEED_URL) {
+// Returns a stop function.
+export function subscribeToBunkerEntries({ onInsert, onStatus }) {
+  if (!supabase) {
     onStatus('idle')
     return () => {}
   }
 
-  if (BUNKER_FEED_MODE === 'stream') {
-    onStatus('connecting')
-    const source = new EventSource(BUNKER_FEED_URL)
-
-    source.onopen = () => onStatus('live')
-    source.onmessage = (event) => {
-      try {
-        onValues(normalize(JSON.parse(event.data)))
-        onStatus('live')
-      } catch {
-        onStatus('error')
-      }
-    }
-    // EventSource reconnects on its own, so an error is a blip to report, not
-    // a reason to tear the connection down.
-    source.onerror = () => onStatus('error')
-
-    return () => source.close()
-  }
-
-  let stopped = false
-  let timer = 0
   onStatus('connecting')
 
-  async function tick() {
-    try {
-      const res = await fetch(BUNKER_FEED_URL, { cache: 'no-store' })
-      if (!res.ok) throw new Error(`feed responded ${res.status}`)
-      const values = normalize(await res.json())
-      if (stopped) return
-      onValues(values)
-      onStatus('live')
-    } catch {
-      if (!stopped) onStatus('error')
-    } finally {
-      if (!stopped) timer = setTimeout(tick, POLL_MS)
-    }
+  const channel = supabase
+    .channel('bunker-entries')
+    .on(
+      'postgres_changes',
+      { event: 'INSERT', schema: 'public', table: BUNKER_TABLE },
+      (payload) => onInsert(payload.new),
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') onStatus('live')
+      // CLOSED is also what a normal unmount looks like, so it is not an error
+      // worth showing; the client retries CHANNEL_ERROR and TIMED_OUT itself.
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') onStatus('error')
+    })
+
+  return () => supabase.removeChannel(channel)
+}
+
+// Writes one entry. `values` is keyed by BUNKER_COLUMNS keys. The inserted row
+// comes back so the submitting tab can show it immediately; every other open
+// tab gets the same row over Realtime.
+export async function submitBunkerEntry(values) {
+  if (!supabase) throw new Error('Supabase is not configured for this build.')
+
+  const row = {}
+  for (const { key } of BUNKER_COLUMNS) {
+    const value = values[key]
+    row[key] = typeof value === 'string' ? value.trim() : value
   }
 
-  tick()
+  const { data, error } = await supabase
+    .from(BUNKER_TABLE)
+    .insert(row)
+    .select(SELECT_COLUMNS)
+    .single()
 
-  return () => {
-    stopped = true
-    clearTimeout(timer)
-  }
+  if (error) throw error
+  return data
 }

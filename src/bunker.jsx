@@ -1,31 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  IconAlertTriangle,
-  IconEye,
-  IconEyeOff,
-  IconLock,
-  IconPointFilled,
-} from '@tabler/icons-react'
-import { FloatingDock } from './components/ui/floating-dock'
-import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
-import { Button } from '@/components/ui/button'
+import { IconPointFilled } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
-import { links, createLink } from './links'
-import { useAuth } from './auth-context'
-import { BUNKER_FIELDS, subscribeToBunkerFeed } from './data/bunker-feed'
-
-// The gate is a client-side check, so the password travels in the bundle and
-// anyone who looks will find it. It keeps the page off the casual path; it is
-// not a secret. Move the comparison to a backend if that changes.
-const BUNKER_PASSWORD = 'LoLcity69'
-
-// Survives a refresh but not a new tab session, matching how /challenges holds
-// its sign-in.
-const SESSION_KEY = 'bunker-unlocked'
+import { BunkerGate, BunkerPage } from './components/bunker/bunker-shell'
+import { bunkerCardClass } from './components/bunker/styles'
+import {
+  BUNKER_COLUMNS,
+  HISTORY_LIMIT,
+  bunkerFeedConfigured,
+  fetchBunkerEntries,
+  subscribeToBunkerEntries,
+} from './data/bunker-feed'
 
 const STATUS_LABEL = {
-  idle: 'Waiting for feed',
+  idle: 'Feed not configured',
   connecting: 'Connecting',
   live: 'Live',
   error: 'Feed unreachable',
@@ -45,281 +33,208 @@ const timeFormat = new Intl.DateTimeFormat(undefined, {
   hour12: false,
 })
 
-// Values arrive one payload at a time and each key is stamped when it lands,
-// so a field the endpoint starts sending later carries a later time than its
-// neighbours.
-function useBunkerFeed() {
-  const [rows, setRows] = useState(() =>
-    Object.fromEntries(BUNKER_FIELDS.map(({ key }) => [key, { value: null, at: null }])),
-  )
-  const [status, setStatus] = useState('idle')
+// Loads the recent entries, then holds the live connection open. Rows pushed
+// by Supabase land on top the moment they arrive.
+function useBunkerEntries() {
+  const [entries, setEntries] = useState([])
+  const [status, setStatus] = useState('connecting')
 
-  const onValues = useCallback((values) => {
-    const at = Date.now()
-    setRows((prev) => {
-      let changed = false
-      const next = { ...prev }
-      for (const [key, value] of Object.entries(values)) {
-        if (!(key in prev)) continue
-        // Re-stamp only on a real change, so an unchanged value polled every
-        // two seconds does not read as fresh news.
-        if (Object.is(prev[key].value, value)) continue
-        next[key] = { value, at }
-        changed = true
-      }
-      return changed ? next : prev
+  const addEntry = useCallback((entry) => {
+    setEntries((prev) => {
+      // The submitting tab inserts its own row and also hears it over
+      // Realtime, so drop the duplicate rather than showing it twice.
+      if (prev.some((row) => row.id === entry.id)) return prev
+      return [entry, ...prev].slice(0, HISTORY_LIMIT)
     })
   }, [])
 
-  useEffect(() => subscribeToBunkerFeed({ onValues, onStatus: setStatus }), [onValues])
+  useEffect(() => {
+    let cancelled = false
 
-  return { rows, status }
+    // Subscribe before backfilling so a row inserted mid-fetch is not lost in
+    // the gap between the two.
+    const stop = subscribeToBunkerEntries({
+      onInsert: addEntry,
+      onStatus: (next) => {
+        if (!cancelled) setStatus(next)
+      },
+    })
+
+    fetchBunkerEntries()
+      .then((rows) => {
+        if (cancelled) return
+        setEntries((prev) => {
+          const seen = new Set(prev.map((row) => row.id))
+          return [...prev, ...rows.filter((row) => !seen.has(row.id))].slice(0, HISTORY_LIMIT)
+        })
+      })
+      .catch(() => {
+        if (!cancelled && bunkerFeedConfigured) setStatus('error')
+      })
+
+    return () => {
+      cancelled = true
+      stop()
+    }
+  }, [addEntry])
+
+  return { entries, status }
 }
 
-// Renders a value the way the endpoint sent it, without guessing at units.
 function formatValue(value) {
-  if (value === null || value === undefined) return null
+  if (value === null || value === undefined || value === '') return null
   if (typeof value === 'number') return value.toLocaleString()
   if (typeof value === 'boolean') return value ? 'true' : 'false'
   if (typeof value === 'object') return JSON.stringify(value)
   return String(value)
 }
 
-// A one-shot flash on the row that just changed, so an update is visible even
-// if you were looking at a different line.
-function useFlash(at) {
+const Dash = () => <span className="text-muted-foreground/40">&mdash;</span>
+
+// A one-shot flash on a row that has just arrived, so a new entry is visible
+// even if you were looking elsewhere on the page. Rows already on screen at
+// mount do not flash.
+function useArrivalFlash(id) {
   const [flash, setFlash] = useState(false)
-  const previous = useRef(at)
+  const mounted = useRef(false)
 
   useEffect(() => {
-    if (at === previous.current) return
-    previous.current = at
-    if (at === null) return
+    if (!mounted.current) {
+      mounted.current = true
+      return
+    }
     setFlash(true)
-    const timer = setTimeout(() => setFlash(false), 700)
+    const timer = setTimeout(() => setFlash(false), 900)
     return () => clearTimeout(timer)
-  }, [at])
+  }, [id])
 
   return flash
 }
 
-function FeedRow({ label, value, at }) {
-  const flash = useFlash(at)
-  const formatted = formatValue(value)
+function EntryRow({ entry, isNewest }) {
+  const flash = useArrivalFlash(entry.id)
+  const receivedAt = entry.created_at ? new Date(entry.created_at) : null
 
   return (
     <tr
       className={cn(
         'border-t border-border transition-colors duration-700',
-        flash && 'bg-lime-500/10 duration-100',
+        // Only the top row can be a fresh arrival; flashing a backfilled row
+        // would be a lie about when it landed.
+        flash && isNewest && 'bg-lime-500/10 duration-100',
       )}
     >
-      <td className="py-3.5 pl-5 pr-4 text-sm font-medium">{label}</td>
-      <td className="py-3.5 px-4 text-right font-mono text-sm tabular-nums">
-        {formatted ?? <span className="text-muted-foreground/50">&mdash;</span>}
-      </td>
-      <td className="py-3.5 pl-4 pr-5 text-right font-mono text-xs tabular-nums text-muted-foreground">
-        {at ? timeFormat.format(at) : <span className="text-muted-foreground/50">&mdash;</span>}
+      {BUNKER_COLUMNS.map(({ key }, i) => {
+        const formatted = formatValue(entry[key])
+        return (
+          <td
+            key={key}
+            className={cn(
+              'py-4 px-5 font-mono text-base tabular-nums',
+              i === 0 ? 'pl-6 text-left' : 'text-right',
+            )}
+          >
+            {formatted ?? <Dash />}
+          </td>
+        )
+      })}
+      <td className="py-4 pl-5 pr-6 text-right font-mono text-sm tabular-nums text-muted-foreground">
+        {receivedAt ? timeFormat.format(receivedAt) : <Dash />}
       </td>
     </tr>
   )
 }
 
-function FloatingDockNav() {
-  const { user } = useAuth()
-  const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
-  return <FloatingDock items={dockLinks} />
-}
-
-function BunkerTable() {
-  const { rows, status } = useBunkerFeed()
-
-  const lastUpdate = useMemo(() => {
-    const stamps = Object.values(rows)
-      .map((row) => row.at)
-      .filter(Boolean)
-    return stamps.length ? Math.max(...stamps) : null
-  }, [rows])
-
+// The placeholder that holds the table's shape before the first entry lands.
+// It is replaced by real rows, never shown alongside them.
+function EmptyRow() {
   return (
-    <div className="flex flex-col items-center w-full px-4 min-h-screen">
-      <div className="absolute right-4 top-4 z-50">
-        <AnimatedThemeToggler className="p-2 rounded-md border-border bg-background hover:bg-accent transition-colors" />
-      </div>
-
-      <div className="flex flex-col items-center justify-center flex-1 w-full max-w-md py-24">
-        <div className="flex items-center justify-between w-full mb-4">
-          <h1 className="text-2xl font-bold tracking-tight">Bunker</h1>
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <IconPointFilled className={cn('w-3.5 h-3.5', STATUS_DOT[status])} />
-            {STATUS_LABEL[status]}
-          </span>
-        </div>
-
-        <div
-          className="w-full overflow-hidden rounded-2xl border border-border bg-card
-            shadow-[rgba(17,24,28,0.08)_0_0_0_1px,rgba(17,24,28,0.08)_0_1px_2px_-1px,rgba(17,24,28,0.04)_0_2px_4px]
-            dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]"
+    <tr className="border-t border-border">
+      {BUNKER_COLUMNS.map(({ key }, i) => (
+        <td
+          key={key}
+          className={cn('py-4 px-5 text-base', i === 0 ? 'pl-6 text-left' : 'text-right')}
         >
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="py-3 pl-5 pr-4 text-left text-xs font-medium text-muted-foreground">
-                  Variable
-                </th>
-                <th className="py-3 px-4 text-right text-xs font-medium text-muted-foreground">
-                  Value
-                </th>
-                <th className="py-3 pl-4 pr-5 text-right text-xs font-medium text-muted-foreground">
-                  Received
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {BUNKER_FIELDS.map(({ key, label }) => (
-                <FeedRow key={key} label={label} value={rows[key].value} at={rows[key].at} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <p className="mt-4 text-xs text-muted-foreground/70">
-          {lastUpdate
-            ? `Last value in at ${timeFormat.format(lastUpdate)}`
-            : 'No values yet. Rows fill in as the feed sends them.'}
-        </p>
-      </div>
-
-      <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">
-        <FloatingDockNav />
-      </div>
-    </div>
+          <Dash />
+        </td>
+      ))}
+      <td className="py-4 pl-5 pr-6 text-right text-sm">
+        <Dash />
+      </td>
+    </tr>
   )
 }
 
-function PasswordGate({ onUnlock }) {
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState(null)
-
-  function handleSubmit(e) {
-    e.preventDefault()
-    if (password === BUNKER_PASSWORD) {
-      onUnlock()
-      return
-    }
-    setError('Wrong password.')
-    setPassword('')
-  }
+function BunkerTable() {
+  const { entries, status } = useBunkerEntries()
 
   return (
-    <div className="flex flex-col items-center w-full px-4 min-h-screen">
-      <div className="absolute right-4 top-4 z-50">
-        <AnimatedThemeToggler className="p-2 rounded-md border-border bg-background hover:bg-accent transition-colors" />
+    <>
+      <div className="flex items-center justify-between w-full mb-4">
+        <h1 className="text-3xl font-bold tracking-tight">Bunker</h1>
+        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <IconPointFilled className={cn('w-3.5 h-3.5', STATUS_DOT[status])} />
+          {STATUS_LABEL[status]}
+        </span>
       </div>
 
-      <div className="w-full max-w-sm pt-24 pb-10">
-        <div
-          className="flex flex-col items-center text-center gap-3 rounded-2xl border border-border bg-card p-8
-            shadow-[rgba(17,24,28,0.08)_0_0_0_1px,rgba(17,24,28,0.08)_0_1px_2px_-1px,rgba(17,24,28,0.04)_0_2px_4px]
-            dark:shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(255,255,255,0.03)_inset,0_0_0_1px_rgba(0,0,0,0.1),0_2px_2px_0_rgba(0,0,0,0.1),0_4px_4px_0_rgba(0,0,0,0.1),0_8px_8px_0_rgba(0,0,0,0.1)]"
-        >
-          <div className="w-14 h-14 rounded-full bg-lime-500/10 flex items-center justify-center">
-            <IconLock className="w-6 h-6 text-lime-600 dark:text-lime-400" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight">Bunker</h1>
-          <p className="text-sm text-muted-foreground">
-            This page is locked. Enter the password to see the feed.
-          </p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-4 text-left">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="bunker-password" className="text-xs font-medium text-muted-foreground">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="bunker-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                    if (error) setError(null)
-                  }}
-                  placeholder="password"
-                  autoComplete="current-password"
-                  autoFocus
-                  spellCheck={false}
-                  className="w-full h-10 px-3 pr-11 rounded-lg bg-muted/50 dark:bg-white/[0.04] text-sm
-                    placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-lime-500/40"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  className="absolute right-1 top-1 size-8 rounded-md flex items-center justify-center
-                    text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+      <div className={`w-full overflow-hidden ${bunkerCardClass}`}>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              {BUNKER_COLUMNS.map(({ key, label }, i) => (
+                <th
+                  key={key}
+                  className={cn(
+                    'py-3.5 px-5 text-sm font-medium text-muted-foreground',
+                    i === 0 ? 'pl-6 text-left' : 'text-right',
+                  )}
                 >
-                  {showPassword ? <IconEyeOff className="w-4 h-4" /> : <IconEye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={password === ''}
-              className="w-full bg-lime-500 text-lime-950 hover:bg-lime-400 dark:bg-lime-500 dark:text-lime-950 dark:hover:bg-lime-400"
-            >
-              Unlock
-            </Button>
-          </form>
-
-          {error && (
-            <p className="flex items-center gap-1.5 text-sm text-red-500 mt-1" role="alert">
-              <IconAlertTriangle className="w-4 h-4 shrink-0" />
-              {error}
-            </p>
-          )}
-        </div>
-
-        <div className="flex justify-center">
-          <Link
-            to="/"
-            className="text-xs text-muted-foreground hover:text-foreground mt-8 underline underline-offset-4"
-          >
-            Back home
-          </Link>
-        </div>
+                  {label}
+                </th>
+              ))}
+              <th className="py-3.5 pl-5 pr-6 text-right text-sm font-medium text-muted-foreground">
+                Received
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.length === 0 ? (
+              <EmptyRow />
+            ) : (
+              entries.map((entry, i) => (
+                <EntryRow key={entry.id} entry={entry} isNewest={i === 0} />
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">
-        <FloatingDockNav />
-      </div>
-    </div>
+      <p className="mt-4 text-xs text-muted-foreground/70">
+        {entries.length === 0
+          ? 'No entries yet. Rows appear here the moment one is submitted.'
+          : `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}, newest first`}
+      </p>
+    </>
   )
 }
 
 export default function Bunker() {
-  const [unlocked, setUnlocked] = useState(() => {
-    try {
-      return sessionStorage.getItem(SESSION_KEY) === '1'
-    } catch {
-      return false
-    }
-  })
-
-  const handleUnlock = useCallback(() => {
-    try {
-      sessionStorage.setItem(SESSION_KEY, '1')
-    } catch {
-      // Private-mode storage refusal only costs the refresh-survives-unlock
-      // convenience, so the page carries on.
-    }
-    setUnlocked(true)
-  }, [])
-
-  // The feed only starts once the gate is open, so a locked page never touches
-  // the endpoint.
-  return unlocked ? <BunkerTable /> : <PasswordGate onUnlock={handleUnlock} />
+  return (
+    <BunkerGate title="Bunker">
+      <BunkerPage
+        width="max-w-2xl"
+        footer={
+          <Link
+            to="/bunker/submit"
+            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+          >
+            Submit an entry
+          </Link>
+        }
+      >
+        <BunkerTable />
+      </BunkerPage>
+    </BunkerGate>
+  )
 }
