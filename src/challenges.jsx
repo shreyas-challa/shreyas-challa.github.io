@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { links, createLink } from './links'
 import { useAuth } from './auth-context'
 import { ChaseGame } from './components/challenges/chase-game'
+import { isKnownUsername, resolveUsername } from './data/challenge-users'
 
 // team-1 .. team-8. Bump TEAM_COUNT if the roster changes; the selector and the
 // validation both read from this list.
@@ -21,13 +22,17 @@ const TEAMS = Array.from({ length: TEAM_COUNT }, (_, i) => `team-${i + 1}`)
 
 const CHECK_MS = 1900
 
-// Integration point for the challenges feature. Receives everything the form
-// collected, and returns { ok: true } to reveal the game or { ok: false,
-// message } to bounce back to the form with that message under it. Swap the
-// body for the real check when the backend is ready: a comparison done here in
-// the browser is readable by anyone holding the bundle.
+// Returns { ok: true } to reveal the game, or { ok: false, message } to bounce
+// back to the form with that message under it. Runs during the progress ring.
+//
+// Step one is the roster check: the username has to be on the list, ignoring
+// case. The password is carried through but not yet examined; a password check
+// belongs on a backend, since anything compared here is readable by whoever
+// holds the bundle.
 async function authenticate({ username, password, team }) { // eslint-disable-line no-unused-vars
-  return { ok: true }
+  const known = resolveUsername(username)
+  if (!known) return { ok: false, message: 'That username is not on the roster.' }
+  return { ok: true, username: known }
 }
 
 // The gate between the form and the game. Runs the check behind the progress
@@ -122,11 +127,18 @@ export default function Challenges() {
   const dockLinks = user ? [...links.slice(0, -1), createLink, links[links.length - 1]] : links
   const canSubmit = team !== null && username.trim() !== '' && password !== ''
 
+  // Live roster flag, recomputed on every keystroke. Nothing in the UI reads it
+  // yet; it rides along on the session so later steps can branch on it.
+  const usernameOnRoster = isKnownUsername(username)
+
   // Stable identities: the auth context resolving mid-check must not restart
   // the ring or fire the check a second time.
   const runCheck = useCallback(() => authenticate(session), [session])
   const handleResult = useCallback((result) => {
     if (result?.ok) {
+      // Carry the roster's spelling forward so the game shows "FlightDirector"
+      // even when it was typed as "flightdirector".
+      if (result.username) setSession((prev) => ({ ...prev, username: result.username }))
       setStage('game')
     } else {
       setError(result?.message ?? 'Incorrect username or password.')
@@ -140,7 +152,7 @@ export default function Challenges() {
     setError(null)
     // The password stays on the session so the real check has something to
     // send once it is wired up.
-    setSession({ username: username.trim(), password, team })
+    setSession({ username: username.trim(), password, team, usernameOnRoster })
     setStage('checking')
   }
 
