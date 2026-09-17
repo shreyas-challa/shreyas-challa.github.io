@@ -8,6 +8,7 @@ import About from './about.jsx'
 import Login from './login.jsx'
 import Draft from './draft.jsx'
 import Playbook from './playbook.jsx'
+import Challenges from './challenges.jsx'
 import { AuthProvider, useAuth } from './auth-context';
 
 function ProtectedRoute({ children }) {
@@ -27,6 +28,7 @@ function App() {
           <Route path="/blog/:slug" element={<Blog />} />
           <Route path="/box/:slug" element={<Box />} />
           <Route path="/playbook" element={<Playbook />} />
+          <Route path="/challenges" element={<Challenges />} />
           {/* Local-only writeup review (no-ops in production build) */}
           {!import.meta.env.PROD && <Route path="/draft/:slug" element={<Draft />} />}
           <Route path="/login" element={<Login />} />
