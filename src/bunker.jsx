@@ -81,27 +81,40 @@ function useBunkerEntries() {
   useEffect(() => {
     let cancelled = false
     let timer = 0
-    // Read inside the timer rather than through state, so rescheduling does
-    // not depend on a re-render having happened first.
-    let realtimeHealthy = false
+    // These are read inside the timer, so rescheduling does not depend on a
+    // re-render having happened first.
+    //
+    // Every id the page has already seen, and whether the socket was the one
+    // that brought it. A poll turning up a row the socket never delivered is
+    // the evidence that Realtime is not carrying events; silence is not, since
+    // a quiet table looks identical to a broken one.
+    const knownIds = new Set()
+    const pushedIds = new Set()
+    let realtimeMissed = false
 
     // Subscribe before the first read so a row inserted mid-fetch is not lost
     // in the gap between the two.
     const stop = subscribeToBunkerEntries({
       onInsert: (entry) => {
-        // Delivery is the only honest proof Realtime is working; being
-        // subscribed is not, which is the whole reason the poll exists.
-        realtimeHealthy = true
-        if (!cancelled) {
-          setStatus('live')
-          addEntry(entry)
-        }
+        if (cancelled) return
+        knownIds.add(entry.id)
+        pushedIds.add(entry.id)
+        // A delivery clears a previous miss: whatever the socket was doing, it
+        // is carrying events again.
+        realtimeMissed = false
+        setStatus('live')
+        addEntry(entry)
       },
       onStatus: (next) => {
         if (cancelled) return
-        // Do not let a bare 'live' overwrite 'polling' once the poll has shown
-        // that nothing is actually coming through.
-        setStatus((prev) => (next === 'live' && prev === 'polling' ? prev : next))
+        if (next === 'error') {
+          // The socket is down, but reads may well be fine. Call that polling
+          // and let a failed read be the only thing that reports a dead feed.
+          realtimeMissed = true
+          setStatus('polling')
+          return
+        }
+        setStatus((prev) => (next === 'live' && realtimeMissed ? prev : next))
       },
     })
 
@@ -109,11 +122,24 @@ function useBunkerEntries() {
       try {
         const rows = await fetchBunkerEntries()
         if (cancelled) return
+
+        const firstRead = baseline.current === null
         // Rows are newest-first, so the first one is the high-water mark. An
         // empty table leaves the epoch, making every later arrival fresh.
-        if (baseline.current === null) baseline.current = rows[0]?.created_at ?? ''
+        if (firstRead) baseline.current = rows[0]?.created_at ?? ''
+
+        const missed = rows.filter((row) => !knownIds.has(row.id) && !pushedIds.has(row.id))
+        for (const row of rows) knownIds.add(row.id)
+
         setEntries((prev) => mergeEntries(prev, rows))
-        setStatus((prev) => (prev === 'error' ? 'polling' : prev))
+
+        // Rows on the table at open are not a miss; only ones that appeared
+        // after the page was already listening.
+        if (!firstRead && missed.length > 0) realtimeMissed = true
+        if (realtimeMissed) setStatus('polling')
+        // A read that succeeds after a failed one means the feed is back, by
+        // the poll at least; the socket says so itself when it resubscribes.
+        else setStatus((prev) => (prev === 'error' ? 'polling' : prev))
       } catch {
         if (!cancelled && bunkerFeedConfigured) setStatus('error')
       } finally {
@@ -121,7 +147,7 @@ function useBunkerEntries() {
           // A tab in the background gets the slow interval either way; there is
           // nobody watching it, and it re-reads as soon as it comes back.
           const idle = typeof document !== 'undefined' && document.hidden
-          const wait = realtimeHealthy || idle ? BACKSTOP_POLL_MS : FALLBACK_POLL_MS
+          const wait = realtimeMissed && !idle ? FALLBACK_POLL_MS : BACKSTOP_POLL_MS
           timer = setTimeout(() => read({ scheduleNext: true }), wait)
         }
       }
@@ -136,16 +162,9 @@ function useBunkerEntries() {
     }
     document.addEventListener('visibilitychange', onVisible)
 
-    // Once the first poll cycle has passed with no pushed row, say so in the
-    // status rather than claiming a live feed that is not delivering.
-    const grace = setTimeout(() => {
-      if (!cancelled && !realtimeHealthy) setStatus((prev) => (prev === 'live' ? 'polling' : prev))
-    }, FALLBACK_POLL_MS * 2)
-
     return () => {
       cancelled = true
       clearTimeout(timer)
-      clearTimeout(grace)
       document.removeEventListener('visibilitychange', onVisible)
       stop()
     }

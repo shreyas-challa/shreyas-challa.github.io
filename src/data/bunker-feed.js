@@ -25,12 +25,13 @@ export const BUNKER_COLUMNS = [
 export const HISTORY_LIMIT = 50
 
 // Realtime is the fast path, not the only path. A socket can be subscribed and
-// still deliver nothing — a table missing from the realtime publication looks
-// exactly like that, and so does a laptop waking from sleep. So the page also
-// re-reads the table on a slow timer and merges anything it missed. The long
-// interval is the backstop while Realtime is healthy; the short one takes over
-// when it is not, which keeps the page working even with Realtime switched off
-// entirely.
+// still miss a row: there is a short window after SUBSCRIBED where the server
+// side is not finished setting up, and a sleeping laptop or a proxy that blocks
+// websockets loses events outright. So the page also re-reads the table on a
+// timer and merges anything the socket did not bring. The long interval is the
+// backstop while Realtime is healthy; the short one takes over once a poll has
+// turned up a row the socket missed, which keeps the table current even with
+// Realtime unavailable entirely.
 export const BACKSTOP_POLL_MS = 15000
 export const FALLBACK_POLL_MS = 4000
 
