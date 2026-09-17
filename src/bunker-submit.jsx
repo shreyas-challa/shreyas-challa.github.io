@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { IconAlertTriangle, IconCheck, IconSend } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { BunkerGate, BunkerPage } from './components/bunker/bunker-shell'
 import { bunkerCardClass, bunkerInputClass } from './components/bunker/styles'
-import { BUNKER_COLUMNS, bunkerFeedConfigured, submitBunkerEntry } from './data/bunker-feed'
+import { BUNKER_COLUMNS, bunkerFeedConfigured } from './data/bunker-feed'
+import { sendToBunker } from './send-to-bunker'
 
 const emptyForm = () => Object.fromEntries(BUNKER_COLUMNS.map(({ key }) => [key, '']))
 
@@ -26,7 +26,7 @@ function SubmitForm() {
     setSending(true)
     setError(null)
     try {
-      await submitBunkerEntry(values)
+      await sendToBunker(values)
       setValues(emptyForm())
       setSentAt(Date.now())
     } catch (err) {
@@ -105,17 +105,7 @@ function SubmitForm() {
 export default function BunkerSubmit() {
   return (
     <BunkerGate title="Bunker">
-      <BunkerPage
-        width="max-w-md"
-        footer={
-          <Link
-            to="/bunker"
-            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-          >
-            Back to the table
-          </Link>
-        }
-      >
+      <BunkerPage width="max-w-md">
         <SubmitForm />
       </BunkerPage>
     </BunkerGate>

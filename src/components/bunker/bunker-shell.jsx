@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { IconAlertTriangle, IconEye, IconEyeOff, IconLock } from '@tabler/icons-react'
 import { FloatingDock } from '@/components/ui/floating-dock'
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
@@ -23,8 +22,9 @@ function BunkerDock() {
   return <FloatingDock items={dockLinks} />
 }
 
-// Page chrome every bunker screen shares: theme toggler, back link, dock.
-export function BunkerPage({ width = 'max-w-md', children, footer }) {
+// Page chrome every bunker screen shares: theme toggler and the dock, which is
+// the site's navigation and the way off these pages.
+export function BunkerPage({ width = 'max-w-md', children }) {
   return (
     <div className="flex flex-col items-center w-full px-4 min-h-screen">
       <div className="absolute right-4 top-4 z-50">
@@ -33,16 +33,6 @@ export function BunkerPage({ width = 'max-w-md', children, footer }) {
 
       <div className={`w-full ${width} pt-24 pb-10`}>
         {children}
-
-        <div className="flex justify-center gap-4 mt-8">
-          {footer}
-          <Link
-            to="/"
-            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-          >
-            Back home
-          </Link>
-        </div>
       </div>
 
       <div className="md:fixed md:z-50 md:bottom-2 md:left-1/2 md:-translate-x-1/2">

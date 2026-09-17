@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { IconPointFilled } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { BunkerGate, BunkerPage } from './components/bunker/bunker-shell'
@@ -308,17 +307,7 @@ function BunkerTable() {
 export default function Bunker() {
   return (
     <BunkerGate title="Bunker">
-      <BunkerPage
-        width="max-w-2xl"
-        footer={
-          <Link
-            to="/bunker/submit"
-            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-          >
-            Submit an entry
-          </Link>
-        }
-      >
+      <BunkerPage width="max-w-2xl">
         <BunkerTable />
       </BunkerPage>
     </BunkerGate>

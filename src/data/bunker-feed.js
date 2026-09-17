@@ -84,25 +84,3 @@ export function subscribeToBunkerEntries({ onInsert, onStatus }) {
 
   return () => supabase.removeChannel(channel)
 }
-
-// Writes one entry. `values` is keyed by BUNKER_COLUMNS keys. The inserted row
-// comes back so the submitting tab can show it immediately; every other open
-// tab gets the same row over Realtime.
-export async function submitBunkerEntry(values) {
-  if (!supabase) throw new Error('Supabase is not configured for this build.')
-
-  const row = {}
-  for (const { key } of BUNKER_COLUMNS) {
-    const value = values[key]
-    row[key] = typeof value === 'string' ? value.trim() : value
-  }
-
-  const { data, error } = await supabase
-    .from(BUNKER_TABLE)
-    .insert(row)
-    .select(SELECT_COLUMNS)
-    .single()
-
-  if (error) throw error
-  return data
-}
