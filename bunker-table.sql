@@ -42,6 +42,8 @@ create policy "anyone can add a bunker entry"
 alter table public.bunker_entries replica identity full;
 
 -- Add to the realtime publication, ignoring the error if it is already there.
+-- This is the step that decides whether inserts are pushed to open pages or
+-- only picked up by the page's fallback poll a few seconds later.
 do $$
 begin
   alter publication supabase_realtime add table public.bunker_entries;
@@ -49,6 +51,13 @@ exception
   when duplicate_object then null;
 end
 $$;
+
+-- Verify it took. One row back means Realtime is carrying the table; no rows
+-- means the alter above did not apply, and the dashboard toggle at
+-- Database -> Replication -> supabase_realtime is the way to fix it.
+select schemaname, tablename
+from pg_publication_tables
+where pubname = 'supabase_realtime' and tablename = 'bunker_entries';
 
 -- Renaming the three columns: change them here and in BUNKER_COLUMNS in
 -- src/data/bunker-feed.js. The table, the form, and the insert all read from

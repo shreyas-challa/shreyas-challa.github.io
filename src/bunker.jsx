@@ -5,7 +5,9 @@ import { cn } from '@/lib/utils'
 import { BunkerGate, BunkerPage } from './components/bunker/bunker-shell'
 import { bunkerCardClass } from './components/bunker/styles'
 import {
+  BACKSTOP_POLL_MS,
   BUNKER_COLUMNS,
+  FALLBACK_POLL_MS,
   HISTORY_LIMIT,
   bunkerFeedConfigured,
   fetchBunkerEntries,
@@ -16,6 +18,9 @@ const STATUS_LABEL = {
   idle: 'Feed not configured',
   connecting: 'Connecting',
   live: 'Live',
+  // Realtime is not carrying events, so the table is refreshing on a timer
+  // instead. Entries still show up, just a few seconds later.
+  polling: 'Polling',
   error: 'Feed unreachable',
 }
 
@@ -23,6 +28,7 @@ const STATUS_DOT = {
   idle: 'text-muted-foreground/50',
   connecting: 'text-amber-500',
   live: 'text-lime-500',
+  polling: 'text-amber-500',
   error: 'text-red-500',
 }
 
@@ -33,52 +39,119 @@ const timeFormat = new Intl.DateTimeFormat(undefined, {
   hour12: false,
 })
 
-// Loads the recent entries, then holds the live connection open. Rows pushed
-// by Supabase land on top the moment they arrive.
+// Folds rows in from either source, newest first, without duplicating an entry
+// that arrived over Realtime and then again on a poll.
+function mergeEntries(prev, incoming) {
+  const byId = new Map(prev.map((row) => [row.id, row]))
+  let changed = false
+  for (const row of incoming) {
+    if (byId.has(row.id)) continue
+    byId.set(row.id, row)
+    changed = true
+  }
+  if (!changed) return prev
+
+  return [...byId.values()]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, HISTORY_LIMIT)
+}
+
+// Loads the recent entries and keeps them current from two directions: rows
+// pushed over Realtime land the moment they arrive, and a timer re-reads the
+// table as a backstop. See the note on the poll intervals in bunker-feed.js.
 function useBunkerEntries() {
   const [entries, setEntries] = useState([])
   const [status, setStatus] = useState('connecting')
 
+  // The newest created_at present when the page opened. Anything stamped later
+  // than this arrived while someone was watching, so it earns a flash. Both
+  // sides of the comparison are server timestamps, which keeps a client clock
+  // that is off by a minute from lighting up the whole table.
+  const baseline = useRef(null)
+
   const addEntry = useCallback((entry) => {
-    setEntries((prev) => {
-      // The submitting tab inserts its own row and also hears it over
-      // Realtime, so drop the duplicate rather than showing it twice.
-      if (prev.some((row) => row.id === entry.id)) return prev
-      return [entry, ...prev].slice(0, HISTORY_LIMIT)
-    })
+    setEntries((prev) => mergeEntries(prev, [entry]))
   }, [])
+
+  const isFresh = useCallback(
+    (entry) => baseline.current !== null && entry.created_at > baseline.current,
+    [],
+  )
 
   useEffect(() => {
     let cancelled = false
+    let timer = 0
+    // Read inside the timer rather than through state, so rescheduling does
+    // not depend on a re-render having happened first.
+    let realtimeHealthy = false
 
-    // Subscribe before backfilling so a row inserted mid-fetch is not lost in
-    // the gap between the two.
+    // Subscribe before the first read so a row inserted mid-fetch is not lost
+    // in the gap between the two.
     const stop = subscribeToBunkerEntries({
-      onInsert: addEntry,
+      onInsert: (entry) => {
+        // Delivery is the only honest proof Realtime is working; being
+        // subscribed is not, which is the whole reason the poll exists.
+        realtimeHealthy = true
+        if (!cancelled) {
+          setStatus('live')
+          addEntry(entry)
+        }
+      },
       onStatus: (next) => {
-        if (!cancelled) setStatus(next)
+        if (cancelled) return
+        // Do not let a bare 'live' overwrite 'polling' once the poll has shown
+        // that nothing is actually coming through.
+        setStatus((prev) => (next === 'live' && prev === 'polling' ? prev : next))
       },
     })
 
-    fetchBunkerEntries()
-      .then((rows) => {
+    async function read({ scheduleNext }) {
+      try {
+        const rows = await fetchBunkerEntries()
         if (cancelled) return
-        setEntries((prev) => {
-          const seen = new Set(prev.map((row) => row.id))
-          return [...prev, ...rows.filter((row) => !seen.has(row.id))].slice(0, HISTORY_LIMIT)
-        })
-      })
-      .catch(() => {
+        // Rows are newest-first, so the first one is the high-water mark. An
+        // empty table leaves the epoch, making every later arrival fresh.
+        if (baseline.current === null) baseline.current = rows[0]?.created_at ?? ''
+        setEntries((prev) => mergeEntries(prev, rows))
+        setStatus((prev) => (prev === 'error' ? 'polling' : prev))
+      } catch {
         if (!cancelled && bunkerFeedConfigured) setStatus('error')
-      })
+      } finally {
+        if (!cancelled && scheduleNext) {
+          // A tab in the background gets the slow interval either way; there is
+          // nobody watching it, and it re-reads as soon as it comes back.
+          const idle = typeof document !== 'undefined' && document.hidden
+          const wait = realtimeHealthy || idle ? BACKSTOP_POLL_MS : FALLBACK_POLL_MS
+          timer = setTimeout(() => read({ scheduleNext: true }), wait)
+        }
+      }
+    }
+
+    read({ scheduleNext: true })
+
+    // Coming back to the tab should show the current table immediately rather
+    // than after the next tick.
+    const onVisible = () => {
+      if (!document.hidden) read({ scheduleNext: false })
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    // Once the first poll cycle has passed with no pushed row, say so in the
+    // status rather than claiming a live feed that is not delivering.
+    const grace = setTimeout(() => {
+      if (!cancelled && !realtimeHealthy) setStatus((prev) => (prev === 'live' ? 'polling' : prev))
+    }, FALLBACK_POLL_MS * 2)
 
     return () => {
       cancelled = true
+      clearTimeout(timer)
+      clearTimeout(grace)
+      document.removeEventListener('visibilitychange', onVisible)
       stop()
     }
   }, [addEntry])
 
-  return { entries, status }
+  return { entries, status, isFresh }
 }
 
 function formatValue(value) {
@@ -91,37 +164,31 @@ function formatValue(value) {
 
 const Dash = () => <span className="text-muted-foreground/40">&mdash;</span>
 
-// A one-shot flash on a row that has just arrived, so a new entry is visible
-// even if you were looking elsewhere on the page. Rows already on screen at
-// mount do not flash.
-function useArrivalFlash(id) {
-  const [flash, setFlash] = useState(false)
-  const mounted = useRef(false)
+// A one-shot flash on a row that arrived while you were watching. Rows are
+// keyed by id, so an arriving row is a fresh mount: it starts lit and fades,
+// rather than reacting to a prop change that never comes. Rows already on the
+// table at open are not fresh and never flash.
+function useMountFlash(fresh) {
+  const [flash, setFlash] = useState(fresh)
 
   useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true
-      return
-    }
-    setFlash(true)
+    if (!fresh) return
     const timer = setTimeout(() => setFlash(false), 900)
     return () => clearTimeout(timer)
-  }, [id])
+  }, [fresh])
 
-  return flash
+  return fresh && flash
 }
 
-function EntryRow({ entry, isNewest }) {
-  const flash = useArrivalFlash(entry.id)
+function EntryRow({ entry, fresh }) {
+  const flash = useMountFlash(fresh)
   const receivedAt = entry.created_at ? new Date(entry.created_at) : null
 
   return (
     <tr
       className={cn(
         'border-t border-border transition-colors duration-700',
-        // Only the top row can be a fresh arrival; flashing a backfilled row
-        // would be a lie about when it landed.
-        flash && isNewest && 'bg-lime-500/10 duration-100',
+        flash && 'bg-lime-500/10 duration-100',
       )}
     >
       {BUNKER_COLUMNS.map(({ key }, i) => {
@@ -166,7 +233,7 @@ function EmptyRow() {
 }
 
 function BunkerTable() {
-  const { entries, status } = useBunkerEntries()
+  const { entries, status, isFresh } = useBunkerEntries()
 
   return (
     <>
@@ -202,8 +269,8 @@ function BunkerTable() {
             {entries.length === 0 ? (
               <EmptyRow />
             ) : (
-              entries.map((entry, i) => (
-                <EntryRow key={entry.id} entry={entry} isNewest={i === 0} />
+              entries.map((entry) => (
+                <EntryRow key={entry.id} entry={entry} fresh={isFresh(entry)} />
               ))
             )}
           </tbody>

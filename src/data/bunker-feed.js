@@ -24,6 +24,16 @@ export const BUNKER_COLUMNS = [
 // these; the list is trimmed to the same length as it grows.
 export const HISTORY_LIMIT = 50
 
+// Realtime is the fast path, not the only path. A socket can be subscribed and
+// still deliver nothing — a table missing from the realtime publication looks
+// exactly like that, and so does a laptop waking from sleep. So the page also
+// re-reads the table on a slow timer and merges anything it missed. The long
+// interval is the backstop while Realtime is healthy; the short one takes over
+// when it is not, which keeps the page working even with Realtime switched off
+// entirely.
+export const BACKSTOP_POLL_MS = 15000
+export const FALLBACK_POLL_MS = 4000
+
 const SELECT_COLUMNS = ['id', 'created_at', ...BUNKER_COLUMNS.map((c) => c.key)].join(', ')
 
 // True when the client has credentials. Without them the page still renders,
