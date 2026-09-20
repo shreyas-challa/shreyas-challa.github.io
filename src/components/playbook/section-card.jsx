@@ -4,20 +4,40 @@ import {
   IconTerminal2,
   IconBrandWindows,
   IconRouter,
+  IconDeviceDesktop,
   IconAlertTriangle,
   IconBan,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { CopyBlock } from './copy-block'
 
-function machineMeta(os) {
-  if (os?.toLowerCase().includes('windows')) {
-    return { Icon: IconBrandWindows, classes: 'bg-sky-500/10 text-sky-700 dark:text-sky-400' }
+// Coarse OS bucket used for the machine badges, group headers, and OS filter.
+export function osPlatform(os) {
+  const s = os?.toLowerCase() || ''
+  if (s.includes('windows')) return 'windows'
+  if (s.includes('opnsense') || s.includes('pfsense')) return 'network'
+  return 'linux'
+}
+
+// Platform-level presentation (icon + label) shared by the dashboard's group
+// headers and OS filter. 'mixed' is a defensive fallback for a section that
+// touches both Linux and Windows machines.
+export const PLATFORM_META = {
+  linux: { label: 'Linux', Icon: IconTerminal2, accent: 'text-lime-600 dark:text-lime-400' },
+  windows: { label: 'Windows', Icon: IconBrandWindows, accent: 'text-sky-600 dark:text-sky-400' },
+  network: { label: 'Network', Icon: IconRouter, accent: 'text-amber-600 dark:text-amber-400' },
+  mixed: { label: 'Cross-platform', Icon: IconDeviceDesktop, accent: 'text-muted-foreground' },
+}
+
+export function machineMeta(os) {
+  switch (osPlatform(os)) {
+    case 'windows':
+      return { Icon: IconBrandWindows, classes: 'bg-sky-500/10 text-sky-700 dark:text-sky-400' }
+    case 'network':
+      return { Icon: IconRouter, classes: 'bg-amber-500/10 text-amber-700 dark:text-amber-400' }
+    default:
+      return { Icon: IconTerminal2, classes: 'bg-lime-500/10 text-lime-700 dark:text-lime-400' }
   }
-  if (os?.toLowerCase().includes('opnsense')) {
-    return { Icon: IconRouter, classes: 'bg-amber-500/10 text-amber-700 dark:text-amber-400' }
-  }
-  return { Icon: IconTerminal2, classes: 'bg-lime-500/10 text-lime-700 dark:text-lime-400' }
 }
 
 // Badge fill deepens with level so L5 reads as visibly "further" than L1
@@ -113,7 +133,7 @@ function LevelRow({ lvl, isFirst }) {
 // separated by a lime seam (not a bordered box each) so the break between
 // them stays legible even though each level also has its own command block.
 export function SectionCard({ section, activeLevel, machines }) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const levels = activeLevel === 'all' ? section.levels : section.levels.filter((l) => l.level === activeLevel)
 
   return (
